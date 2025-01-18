@@ -6,7 +6,11 @@ import java.time.LocalDate;
 
 @Entity
 public class TravelDocument {
+
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     private String passportNr;
 
     private String country;
@@ -45,5 +49,16 @@ public class TravelDocument {
 
     public void setIssuingAuthority(String issuing_authority) {
         this.issuingAuthority = issuing_authority;
+    }
+
+    @Override
+    public String toString() {
+        return "TravelDocument{" +
+                "id=" + id +
+                ", passportNr='" + passportNr + '\'' +
+                ", country='" + country + '\'' +
+                ", issueDate=" + issueDate +
+                ", issuingAuthority='" + issuingAuthority + '\'' +
+                '}';
     }
 }

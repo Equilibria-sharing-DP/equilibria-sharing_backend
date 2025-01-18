@@ -11,10 +11,9 @@ public class Person {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private boolean mainTraveler;
+    private Boolean mainTraveler;
 
     private String firstName;
-
     private String lastName;
 
     @Enumerated(EnumType.STRING)
@@ -22,42 +21,24 @@ public class Person {
 
     private LocalDate birthDate;
 
-    @OneToOne
-    @JoinColumn(name = "travel_document")
+    @OneToOne(cascade = CascadeType.ALL)
     private TravelDocument travelDocument;
 
-
     @ManyToOne
-    @JoinColumn(name = "address_id", nullable = false)
     private Address address;
 
-    //temp: slug mit dem der main traveler (manuell) referenziert werden kann
-    private String mainTravelerRef;
+    @ManyToOne
+    private Person mainTravelerRef;
 
-    public Person() {
-
+    public Long getId() {
+        return id;
     }
 
-    public Person(boolean mainTraveler, String firstName, String lastName, Gender gender, LocalDate birthDate, TravelDocument travelDocument, Address address, String mainTravelerRef) {
-        this.mainTraveler = mainTraveler;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.gender = gender;
-        this.birthDate = birthDate;
-        if (mainTraveler) {
-            this.travelDocument = travelDocument;
-        } else {
-            this.mainTravelerRef = mainTravelerRef;
-        }
-        this.address = address;
-    }
-
-    public boolean isMainTraveler() {
+    public Boolean getMainTraveler() {
         return mainTraveler;
     }
 
-
-    public void setMainTraveler(boolean mainTraveler) {
+    public void setMainTraveler(Boolean mainTraveler) {
         this.mainTraveler = mainTraveler;
     }
 
@@ -109,11 +90,26 @@ public class Person {
         this.address = address;
     }
 
-    public String getMainTravelerRef() {
+    public Person getMainTravelerRef() {
         return mainTravelerRef;
     }
 
-    public void setMainTravelerRef(String mainTravelerRef) {
+    public void setMainTravelerRef(Person mainTravelerRef) {
         this.mainTravelerRef = mainTravelerRef;
+    }
+
+    @Override
+    public String toString() {
+        return "Person{" +
+                "id=" + id +
+                ", mainTraveler=" + mainTraveler +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", gender=" + gender +
+                ", birthDate=" + birthDate +
+                ", travelDocument=" + travelDocument +
+                ", address=" + address +
+                ", mainTravelerRef=" + mainTravelerRef +
+                '}';
     }
 }

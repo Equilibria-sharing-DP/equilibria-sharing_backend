@@ -17,8 +17,6 @@ public class Address {
 
     private String city;
 
-    private String community;
-
     private int postalCode;
 
     private String street;
@@ -26,6 +24,20 @@ public class Address {
     private int houseNumber;
 
     private String addressAdditional;
+
+    public Address(String city, int postalCode, String street, int houseNumber, String addressAdditional) {
+        this.city = city;
+        this.postalCode = postalCode;
+        this.street = street;
+        this.houseNumber = houseNumber;
+        if (addressAdditional != null) {
+            this.addressAdditional = addressAdditional;
+        }
+    }
+
+    public Address() {
+
+    }
 
     public String getCity() {
         return city;
@@ -35,13 +47,6 @@ public class Address {
         this.city = city;
     }
 
-    public String getCommunity() {
-        return community;
-    }
-
-    public void setCommunity(String community) {
-        this.community = community;
-    }
 
     public int getPostalCode() {
         return postalCode;
@@ -73,5 +78,17 @@ public class Address {
 
     public void setAddressAdditional(String addressAdditional) {
         this.addressAdditional = addressAdditional;
+    }
+
+    @Override
+    public String toString() {
+        return "Address{" +
+                "id=" + id +
+                ", city='" + city + '\'' +
+                ", postalCode=" + postalCode +
+                ", street='" + street + '\'' +
+                ", houseNumber=" + houseNumber +
+                ", addressAdditional='" + addressAdditional + '\'' +
+                '}';
     }
 }
