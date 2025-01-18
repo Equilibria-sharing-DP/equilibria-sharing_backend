@@ -1,14 +1,15 @@
 package api.equilibria_sharing.model.requests;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class BookingRequest {
     private Long accommodationId;
     private MainTravelerRequest mainTraveler;
     private List<GuestRequest> additionalGuests;
-    private LocalDate checkIn;
-    private LocalDate expectedCheckOut;
+    private LocalDateTime checkIn;
+    private LocalDateTime expectedCheckOut;
 
     public Long getAccommodationId() {
         return accommodationId;
@@ -34,19 +35,19 @@ public class BookingRequest {
         this.additionalGuests = additionalGuests;
     }
 
-    public LocalDate getCheckIn() {
+    public LocalDateTime getCheckIn() {
         return checkIn;
     }
 
-    public void setCheckIn(LocalDate checkIn) {
+    public void setCheckIn(LocalDateTime checkIn) {
         this.checkIn = checkIn;
     }
 
-    public LocalDate getExpectedCheckOut() {
+    public LocalDateTime getExpectedCheckOut() {
         return expectedCheckOut;
     }
 
-    public void setExpectedCheckOut(LocalDate expectedCheckOut) {
+    public void setExpectedCheckOut(LocalDateTime expectedCheckOut) {
         this.expectedCheckOut = expectedCheckOut;
     }
 }

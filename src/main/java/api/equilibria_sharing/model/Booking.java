@@ -22,9 +22,9 @@ public class Booking {
     @ManyToMany(cascade = CascadeType.ALL)
     private List<Person> additionalGuests; // Liste von Mitreisenden
 
-    private LocalDate checkIn;
-    private LocalDate expectedCheckOut;
-    private LocalDate actualCheckOut;
+    private LocalDateTime checkIn;
+    private LocalDateTime expectedCheckOut;
+    private LocalDateTime actualCheckOut;
     private boolean touristTax;
 
     private int peopleOver18 = 0;
@@ -57,27 +57,27 @@ public class Booking {
         this.additionalGuests = additionalGuests;
     }
 
-    public LocalDate getCheckIn() {
+    public LocalDateTime getCheckIn() {
         return checkIn;
     }
 
-    public void setCheckIn(LocalDate checkIn) {
+    public void setCheckIn(LocalDateTime checkIn) {
         this.checkIn = checkIn;
     }
 
-    public LocalDate getExpectedCheckOut() {
+    public LocalDateTime getExpectedCheckOut() {
         return expectedCheckOut;
     }
 
-    public void setExpectedCheckOut(LocalDate expectedCheckOut) {
+    public void setExpectedCheckOut(LocalDateTime expectedCheckOut) {
         this.expectedCheckOut = expectedCheckOut;
     }
 
-    public LocalDate getActualCheckOut() {
+    public LocalDateTime getActualCheckOut() {
         return actualCheckOut;
     }
 
-    public void setActualCheckOut(LocalDate actualCheckOut) {
+    public void setActualCheckOut(LocalDateTime actualCheckOut) {
         this.actualCheckOut = actualCheckOut;
     }
 
@@ -114,7 +114,7 @@ public class Booking {
 
         // Prüfe das Alter des Hauptreisenden
         if (mainTraveler != null && mainTraveler.getBirthDate() != null) {
-            int age = calculateAge(mainTraveler.getBirthDate(), checkIn);
+            int age = calculateAge(mainTraveler.getBirthDate(), LocalDate.from(checkIn));
             if (age >= 18) {
                 count++;
             }
@@ -124,7 +124,7 @@ public class Booking {
         if (additionalGuests != null) {
             for (Person guest : additionalGuests) {
                 if (guest.getBirthDate() != null) {
-                    int age = calculateAge(guest.getBirthDate(), checkIn);
+                    int age = calculateAge(guest.getBirthDate(), LocalDate.from(checkIn));
                     if (age >= 18) {
                         count++;
                     }
