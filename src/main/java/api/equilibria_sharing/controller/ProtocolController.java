@@ -4,17 +4,23 @@ import com.itextpdf.text.Document;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.PdfWriter;
 
+import api.equilibria_sharing.model.requests.ProtocolRequest;
 import api.equilibria_sharing.repositories.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.ByteArrayOutputStream;
+import java.time.LocalDate;
 
 @RestController
 public class ProtocolController {
@@ -35,7 +41,7 @@ public class ProtocolController {
     @GetMapping("/api/v1/protocol")
     public ResponseEntity<byte[]> generateProtocol() {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            // 1. Erstelle ein Dokument
+            log.info("Create File");
             Document document = new Document();
             PdfWriter.getInstance(document, baos);
 
@@ -49,12 +55,25 @@ public class ProtocolController {
             headers.setContentType(MediaType.APPLICATION_PDF);
             headers.setContentDispositionFormData("attachment", "protocol.pdf");
 
-            return ResponseEntity.ok()
-                    .headers(headers)
-                    .body(baos.toByteArray());
+            log.info("Downloading File");
+            return ResponseEntity.ok().headers(headers).body(baos.toByteArray());
         } catch (Exception e) {
             log.error("Error while generating PDF", e);
             return ResponseEntity.internalServerError().build();
         }
     }
+    @GetMapping("/api/v1/report")
+    public ResponseEntity<?> getReport(
+            @RequestParam String format,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate beginDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        
+        // Logik für CSV oder PDF generieren
+        System.out.println("Format: " + format);
+        System.out.println("Beginn: " + beginDate);
+        System.out.println("Ende: " + endDate);
+        
+        return ResponseEntity.ok("Daten empfangen");
+    }
+
 }
