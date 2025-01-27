@@ -72,9 +72,11 @@ public class BookingController {
         log.info("Main traveler after setting address: {}", mainTraveler);
 
         TravelDocument travelDocument = new TravelDocument();
-        travelDocument.setPassportNr(bookingRequest.getMainTraveler().getPassportNr());
+        travelDocument.setType(bookingRequest.getMainTraveler().getTravelDocumentType());
+        travelDocument.setDocumentNr(bookingRequest.getMainTraveler().getDocumentNr());
         travelDocument.setCountry(bookingRequest.getMainTraveler().getCountry());
         travelDocument.setIssueDate(bookingRequest.getMainTraveler().getIssueDate());
+        travelDocument.setExpiryDate(bookingRequest.getMainTraveler().getExpiryDate());
         travelDocument.setIssuingAuthority(bookingRequest.getMainTraveler().getIssuingAuthority());
 
         mainTraveler.setTravelDocument(travelDocument);
@@ -202,9 +204,11 @@ public class BookingController {
 
         // update the travel document of main traveler
         TravelDocument travelDocument = new TravelDocument();
-        travelDocument.setPassportNr(bookingRequest.getMainTraveler().getPassportNr());
+        travelDocument.setType(bookingRequest.getMainTraveler().getTravelDocumentType());
+        travelDocument.setDocumentNr(bookingRequest.getMainTraveler().getDocumentNr());
         travelDocument.setCountry(bookingRequest.getMainTraveler().getCountry());
         travelDocument.setIssueDate(bookingRequest.getMainTraveler().getIssueDate());
+        travelDocument.setExpiryDate(bookingRequest.getMainTraveler().getExpiryDate());
         travelDocument.setIssuingAuthority(bookingRequest.getMainTraveler().getIssuingAuthority());
         mainTraveler.setTravelDocument(travelDocument);
         personRepository.save(mainTraveler);

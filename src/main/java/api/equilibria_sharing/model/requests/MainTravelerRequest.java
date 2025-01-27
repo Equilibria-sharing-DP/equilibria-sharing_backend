@@ -1,7 +1,7 @@
 package api.equilibria_sharing.model.requests;
 
-import api.equilibria_sharing.model.Address;
 import api.equilibria_sharing.model.Gender;
+import api.equilibria_sharing.model.TravelDocumentType;
 
 import java.time.LocalDate;
 
@@ -10,9 +10,11 @@ public class MainTravelerRequest {
     private String lastName;
     private Gender gender;
     private LocalDate birthDate;
-    private String passportNr;
+    private TravelDocumentType travelDocumentType;
+    private String documentNr;
     private String country;
     private LocalDate issueDate;
+    private LocalDate expiryDate;
     private String issuingAuthority;
     private String city;
     private int postalCode;
@@ -53,12 +55,12 @@ public class MainTravelerRequest {
         this.birthDate = birthDate;
     }
 
-    public String getPassportNr() {
-        return passportNr;
+    public String getDocumentNr() {
+        return documentNr;
     }
 
-    public void setPassportNr(String passportNr) {
-        this.passportNr = passportNr;
+    public void setDocumentNr(String documentNr) {
+        this.documentNr = documentNr;
     }
 
     public String getCountry() {
@@ -123,5 +125,21 @@ public class MainTravelerRequest {
 
     public void setAddressAdditional(String addressAdditional) {
         this.addressAdditional = addressAdditional;
+    }
+
+    public LocalDate getExpiryDate() {
+        return expiryDate;
+    }
+
+    public void setExpiryDate(LocalDate expiryDate) {
+        this.expiryDate = expiryDate;
+    }
+
+    public TravelDocumentType getTravelDocumentType() {
+        return travelDocumentType;
+    }
+
+    public void setTravelDocumentType(TravelDocumentType travelDocumentType) {
+        this.travelDocumentType = travelDocumentType;
     }
 }
