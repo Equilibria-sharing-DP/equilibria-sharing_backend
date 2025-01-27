@@ -1,4 +1,4 @@
 # equilibria-sharing_backend
 
-### UML:![](docs/equilibria-uml-18-01-2025.drawio.png)
+### UML:![](docs/equilibria-uml-27-01-2025.drawio.png)
 
