@@ -1,33 +1,34 @@
 package api.equilibria_sharing.model;
 
+import api.equilibria_sharing.controller.ProtocolController;
 
+import java.io.ByteArrayOutputStream;
+import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-import com.itextpdf.kernel.geom.Rectangle;
-// import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
-import com.itextpdf.kernel.pdf.PdfPage;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
+import com.itextpdf.layout.element.Text;
 import com.itextpdf.layout.element.AreaBreak;
 import com.itextpdf.layout.element.Cell;
 import com.itextpdf.layout.property.UnitValue;
 import com.itextpdf.text.DocumentException;
-// import com.itextpdf.text.pdf.PdfPage;
 import com.itextpdf.layout.borders.Border;
+import com.itextpdf.layout.borders.SolidBorder;
 import com.itextpdf.layout.property.TextAlignment;
 import com.itextpdf.layout.element.Image;
+import com.itextpdf.io.IOException;
 import com.itextpdf.io.image.ImageData;
 import com.itextpdf.io.image.ImageDataFactory;
 
 
-import api.equilibria_sharing.controller.ProtocolController;
+
 
 
 public class Protocol {
@@ -35,98 +36,190 @@ public class Protocol {
     
     public Protocol(ProtocolController controller){ this.controller = controller; }
     
-    public Document getPDF(List<Booking> bookingList, java.io.ByteArrayOutputStream baos) throws DocumentException, java.io.IOException{
-        try(PdfWriter writer = new PdfWriter(baos)){
-
+    public Document getPDF(List<Booking> bookingList, ByteArrayOutputStream baos) throws DocumentException, java.io.IOException {
+        try (PdfWriter writer = new PdfWriter(baos)) {
             PdfDocument pdfDoc = new PdfDocument(writer);
             Document document = new Document(pdfDoc);
+    
+            // Seite auf Querformat setzen
+            pdfDoc.setDefaultPageSize(PageSize.A4.rotate());
+    
+            //boolean addPageBreak = false;
+    
+            int totalBookings = bookingList.size();
 
+            for (int i = 0; i < totalBookings; i++) {
+                Booking booking = bookingList.get(i);
 
-        
-            document.add(new Paragraph("Protocol Report").setBold().setFontSize(20).setTextAlignment(TextAlignment.CENTER));
-            document.add(new Paragraph("\n")); // Zeilenumbruch
+                // Seitenumbruch nur vor der nächsten Buchung, außer bei der ersten
+                if (i > 0) {
+                    document.add(new AreaBreak());  // Seitenumbruch nach der ersten Buchung
+                }
 
+                // Neue Seite nur hinzufügen, wenn es nicht die letzte Buchung ist
+                if (i < totalBookings - 1) {
+                    pdfDoc.addNewPage();  // Neue Seite hinzufügen, aber nicht nach der letzten Buchung
+                }
 
-            
+                document.setMargins(20, 20, 20, 20);
 
-            boolean tf = false; //auf false damit die Seite beim ersten mal nicht umgebrochen wird
-
-            for (Booking booking : bookingList) {
-                
-                PdfPage page = pdfDoc.addNewPage();  //neue Seite
-                
-                if(tf){ document.add(new AreaBreak());} //sonst werden zu viele Seiten hinzugefügt
-                tf = true; //auf true setzen damit ein page break stattfindet
-
-                page.setMediaBox(new Rectangle(842, 595)); // Landscape: A4 (Width x Height)
-                document.setMargins(300, 20, 20, 20);
-
-                // Bild laden (aus dem gleichen Ordner wie das PDF)
-                String imagePath = System.getProperty("user.dir")+"/src/main/resources/logo.png";
-                
-                
-                ImageData imageData = ImageDataFactory.create(imagePath);
-                Image image = new Image(imageData);
-                image.setWidth(125); // Bildgröße anpassen
-                image.setHeight(125);
-
-                
-                Table headerTable = new Table(new float[]{1, 2});
-                headerTable.setWidth(UnitValue.createPercentValue(150));
-
-
-                String title = "Buchung: " + booking.getMainTraveler().getFirstName() + " - " + booking.getId();
-                Paragraph titleParagraph = new Paragraph(title).setBold().setFontSize(16).setTextAlignment(TextAlignment.LEFT);
-                headerTable.addCell(new Cell().add(titleParagraph).setBorder(Border.NO_BORDER));
-                
-
-                headerTable.addCell(new Cell().add(image).setTextAlignment(TextAlignment.RIGHT).setBorder(Border.NO_BORDER));
-
-                // Füge die Tabelle mit Bild und Überschrift hinzu
-                document.add(headerTable);
-
-                // Abstand nach dem Header
-                document.add(new Paragraph("\n"));
-
-                // Tabelle für die Buchungsdetails
-                Table table = new Table(new float[]{1, 2}); // Zwei Spalten: Label und Wert
-                table.setWidth(UnitValue.createPercentValue(140));
-                
-                table.setMarginLeft(30);
-                
-                
-
-                // Daten der Buchung horizontal darstellen
-                table.addCell(new Cell().add(new Paragraph("ID").setBold()));
-                table.addCell(new Cell().add(new Paragraph(String.valueOf(booking.getId()))));
-
-                table.addCell(new Cell().add(new Paragraph("Accommodation").setBold()));
-                table.addCell(new Cell().add(new Paragraph(String.valueOf(booking.getAccommodation()))));
-
-                table.addCell(new Cell().add(new Paragraph("Main Person").setBold()));
-                table.addCell(new Cell().add(new Paragraph(booking.getMainTraveler().getFirstName())));
-
-                table.addCell(new Cell().add(new Paragraph("Check-In").setBold()));
-                table.addCell(new Cell().add(new Paragraph(formatDateTime(booking.getCheckIn()))));
-
-                table.addCell(new Cell().add(new Paragraph("Expected Check-Out").setBold()));
-                table.addCell(new Cell().add(new Paragraph(formatDateTime(booking.getExpectedCheckOut()))));
-
-                table.addCell(new Cell().add(new Paragraph("Actual Check-Out").setBold()));
-                table.addCell(new Cell().add(new Paragraph(formatDateTime(booking.getActualCheckOut()))));
-
-                table.addCell(new Cell().add(new Paragraph("Tourist Tax").setBold()));
-                table.addCell(new Cell().add(new Paragraph(String.valueOf(booking.isTouristTax()))));
-
-                document.add(table); // Tabelle zum Dokument hinzufügen
-
-            } 
-            document.close(); 
+                // Füge Header, Inhalt und Footer hinzu
+                addHeader(document, booking);
+                addContentWithTables(document, booking);
+                addBottom(document, pdfDoc, bookingList);
+            }
+    
+            document.close();
             return document;
         }
     }
     
+    private void addHeader(Document document, Booking booking) throws IOException {
+        String title = "Buchung: " + booking.getMainTraveler().getFirstName() + " " + booking.getMainTraveler().getLastName() + " - " + booking.getId();
+        Paragraph titleParagraph = new Paragraph(title).setBold().setFontSize(16).setTextAlignment(TextAlignment.LEFT).setBorder(Border.NO_BORDER);
+    
+        Table headerTable = new Table(new float[]{1, 1});
+        headerTable.setWidth(UnitValue.createPercentValue(100)).setBorder(Border.NO_BORDER);
+        
+        Cell titleCell = new Cell().add(titleParagraph);
+        titleCell.setBorder(Border.NO_BORDER);  // Border für die Zelle entfernen
+        
+        headerTable.addCell(titleCell);
+        document.add(headerTable);
+        document.add(new Paragraph("\n")); // Abstand nach dem Header
+        
+    }
+    
+    /**
+     * Da sich sonst niemand auskennt welche Tabelle was macht: (Ich morgen auch nicht mehr)
+     * table1: Beinhaltet das Bild und und die Tabelle für Vorname bis PLZ
+     * outerTable: Beinhaltet [Vorname bist Staat] und [Straße bis PLZ]
+     * innerTable: Beinhaltet [Vorname bist Staat] (da 2 Spalten)
+     * innerTable2: Beinhaltet  [Straße bis PLZ] (da nur 1 Spalte)
+     * tableDates: Beinhaltet die Datumswerte 
+     * tableAddOns: Beinhaltet die zusätzlichen Gäste
+     */
 
+    private void addContentWithTables(Document document, Booking booking) throws MalformedURLException {
+        // Überschrift 1
+        document.add(new Paragraph("Allgemein").setBold().setFontSize(14).setTextAlignment(TextAlignment.LEFT));
+        
+        // Tabelle 1
+        Table table1 = new Table(new float[]{1, 1});
+        table1.setWidth(UnitValue.createPercentValue(100)).setBorder(Border.NO_BORDER);
+
+        Table outerTable = new Table(new float[]{1});
+        outerTable.setWidth(UnitValue.createPercentValue(100));
+
+        outerTable.addCell(new Cell().setHeight(10).setBorder(Border.NO_BORDER));
+
+        
+
+        Table innerTable = new Table(new float[] {2,1});
+        innerTable.setWidth(UnitValue.createPercentValue(100));
+        innerTable.addCell(createHalfBoldCell("Vorname: ",booking.getMainTraveler().getFirstName()));
+        innerTable.addCell(createHalfBoldCell("Geschlecht: ", String.valueOf(booking.getMainTraveler().getGender())));
+
+        innerTable.addCell(createHalfBoldCell("Nachname: ", booking.getMainTraveler().getLastName()));
+        innerTable.addCell(createHalfBoldCell("Geburtsdatum: ", String.valueOf(booking.getMainTraveler().getBirthDate())));
+
+        innerTable.addCell(createHalfBoldCell("Reisedokument Nr.: ", booking.getMainTraveler().getTravelDocument().getDocumentNr()));
+        innerTable.addCell(createHalfBoldCell("Staatsangehörigkeit: ", booking.getMainTraveler().getTravelDocument().getCountry()));
+
+        Table innerTable2 = new Table(new float[]{3, 3});
+        innerTable2.setWidth(UnitValue.createPercentValue(100));
+
+        String temp = booking.getMainTraveler().getAddress().getStreet()+" / "+booking.getMainTraveler().getAddress().getHouseNumber()+" / "+booking.getMainTraveler().getAddress().getAddressAdditional();
+        innerTable2.addCell(createHalfBoldCell("Straße/Nummer/Zusatz: ",temp));
+        innerTable2.addCell(new Cell().setBorder(Border.NO_BORDER));
+
+        temp = booking.getMainTraveler().getAddress().getPostalCode()+" / "+booking.getMainTraveler().getAddress().getCity()+" / Land?";
+        innerTable2.addCell(createHalfBoldCell("PLZ/Ort/Staat: ",temp));
+        
+        outerTable.addCell(new Cell().add(innerTable).setBorder(Border.NO_BORDER));
+        outerTable.addCell(new Cell().add(innerTable2).setBorder(Border.NO_BORDER));
+
+        table1.addCell(new Cell().add(outerTable).setBorder(Border.NO_BORDER).setBorderTop(new SolidBorder(1)));
+    
+        // Bild hinzufügen
+        String imagePath = System.getProperty("user.dir") + "/src/main/resources/logo.png";
+        ImageData imageData = ImageDataFactory.create(imagePath);
+        Image image = new Image(imageData).scaleToFit(150, 150);
+        table1.addCell(new Cell().add(image.setTextAlignment(TextAlignment.RIGHT)).setBorder(Border.NO_BORDER));
+    
+        document.add(table1.setBorder(Border.NO_BORDER));
+    
+        // Überschrift Dauer
+        document.add(new Paragraph("Dauer").setBold().setFontSize(14).setTextAlignment(TextAlignment.LEFT));
+    
+        // Tabelle für Datumsangaben
+        Table tableDates = new Table(new float[]{2, 2, 2});
+        tableDates.setWidth(UnitValue.createPercentValue(100));
+        tableDates.addCell(new Cell().setHeight(5).setBorder(Border.NO_BORDER));
+        tableDates.addCell(new Cell().setBorder(Border.NO_BORDER));
+        tableDates.addCell(new Cell().setBorder(Border.NO_BORDER));
+        tableDates.addCell(createHalfBoldCell("Ankunft: ",String.valueOf(booking.getCheckIn())));
+        tableDates.addCell(createHalfBoldCell("Geplante Abreise: ",String.valueOf(booking.getExpectedCheckOut())));
+        tableDates.addCell(createHalfBoldCell("Abreise: ", String.valueOf(booking.getActualCheckOut())));
+    
+        document.add(tableDates.setBorder(Border.NO_BORDER).setBorderTop(new SolidBorder(1)));
+
+    
+        
+        //Überschrift Zusätzliche Personen
+        document.add(new Paragraph("\nWeitere Personen").setBold().setFontSize(14).setTextAlignment(TextAlignment.LEFT));
+
+        // Tabelle für die restlichen Personen
+        Table tableAddOns = new Table(new float[]{2, 2, 2});
+        tableAddOns.setWidth(UnitValue.createPercentValue(100));
+        tableAddOns.addCell(new Cell().setHeight(5).setBorder(Border.NO_BORDER));
+        tableAddOns.addCell(new Cell().setBorder(Border.NO_BORDER));
+        tableAddOns.addCell(new Cell().setBorder(Border.NO_BORDER));
+        tableAddOns.addCell(createBoldCell("Vorname:"));
+        tableAddOns.addCell(createBoldCell("Nachname:"));
+        tableAddOns.addCell(createBoldCell("Geburtsdatum:"));
+        List<Person> list = booking.getAdditionalGuests();
+        for(Person person : list){
+            tableAddOns.addCell(createCell(person.getFirstName()));
+            tableAddOns.addCell(createCell(person.getLastName()));
+            tableAddOns.addCell(createCell(String.valueOf(person.getBirthDate())));
+        }
+
+        document.add(tableAddOns.setBorder(Border.NO_BORDER).setBorderTop(new SolidBorder(1)));
+
+
+    }
+
+
+    /*---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
+    // Unten an der Seite
+
+    private void addBottom(Document document, PdfDocument pdf, List<Booking> bookingList) {
+        
+        // Erstelle die Tabelle
+        Table unten = new Table(new float[]{1,2,1});
+        unten.setWidth(1000);
+        String temp = "Buchungen von: \n" + bookingList.get(bookingList.size() - 1).getExpectedCheckOut() + "bis" + bookingList.get(0).getCheckIn();
+        unten.addCell(createBoldCell(temp).setFontSize(8).setTextAlignment(TextAlignment.LEFT));
+        
+        unten.addCell(new Cell().setWidth(100).setBorder(Border.NO_BORDER));
+
+        
+        unten.addCell(createCell("\nEquilibria Immobilienmanagement GmbH").setFontSize(8).setTextAlignment(TextAlignment.RIGHT));
+    
+        unten.setFixedPosition(36, 15, 500); // x=36, y=position, width=500
+    
+        // Füge die Tabelle zum Dokument hinzu
+        document.add(unten);
+    }
+    
+
+    
+    
+
+    
+    /*---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
+    // CSV
 
     
     public byte[] getCSV(List<Booking> bookingList) {
@@ -159,19 +252,33 @@ public class Protocol {
         return csvContent.toString().getBytes(StandardCharsets.UTF_8);
     }
 
+    /*---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
+    // Excel
+
     public Document getExcel(LocalDate beginDate, LocalDate enDate){
         return null;
     }
 
 
-    /*----------------------------------- */
-    // Hilfsmethoden
 
-    private String formatDateTime(LocalDateTime dateTime) {
-        if (dateTime == null) return "N/A";
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        return dateTime.format(formatter);
+    /*---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
+    // Hilfsmethoden
+    
+    private Cell createCell(String text) {
+        return new Cell().add(new Paragraph(text)).setBorder(Border.NO_BORDER);
     }
 
+    private Cell createHalfBoldCell(String text1, String text2){
+        if(text1 == null){text1 = "N/A";}
+        if(text2 == null){text2 = "N/A";}
+        Paragraph paragraph = new Paragraph()
+            .add(new Text(text1).setBold()) // Fett formatierter Teil
+            .add(new Text(text2));         // Normale Schrift für den Wert
+        return new Cell().add(paragraph).setBorder(Border.NO_BORDER);
+    }
+
+    private Cell createBoldCell(String text) {
+        return new Cell().add(new Paragraph(text)).setBold().setBorder(Border.NO_BORDER);
+    }
 
 }

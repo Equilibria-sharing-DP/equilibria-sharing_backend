@@ -1,7 +1,7 @@
 package api.equilibria_sharing.model;
 
 import jakarta.persistence.*;
-import org.springframework.boot.autoconfigure.amqp.RabbitConnectionDetails;
+// import org.springframework.boot.autoconfigure.amqp.RabbitConnectionDetails;
 
 import java.time.LocalDate;
 
@@ -112,4 +112,3 @@ public class Person {
                 ", mainTravelerRef=" + mainTravelerRef +
                 '}';
     }
-}

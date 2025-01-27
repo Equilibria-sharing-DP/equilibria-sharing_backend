@@ -29,16 +29,10 @@ public class ProtocolController {
     private static final Logger log = LoggerFactory.getLogger(ProtocolController.class);
 
     public final BookingRepository bookingRepository;
-    private final PersonRepository personRepository;
-    private final AccommodationRepository accommodationRepository;
-    private final AddressRepository addressRepository;
     private final Protocol protocol;
 
-    public ProtocolController(BookingRepository bookingRepository, PersonRepository personRepository, AccommodationRepository accommodationRepository, AddressRepository addressRepository) {
+    public ProtocolController(BookingRepository bookingRepository) {
         this.bookingRepository = bookingRepository;
-        this.personRepository = personRepository;
-        this.accommodationRepository = accommodationRepository;
-        this.addressRepository = addressRepository;
         this.protocol = new Protocol(this);
     }
 
@@ -78,19 +72,6 @@ public class ProtocolController {
                 headers.setContentDispositionFormData("attachment", "protocol.xlsx");
             }
             else { return ResponseEntity.badRequest().body("Falscher Dateityp".getBytes()); }
-
-            // Document document = new Document();
-            // PdfWriter.getInstance(document, baos);
-
-            // document.open();
-            // document.add(new Paragraph("Protocol Report"));
-            // document.add(new Paragraph("This is a generated PDF file."));
-            // document.close();
-
-            // 2. Erstelle die HTTP-Antwort
-            // 
-            // headers.setContentType(MediaType.APPLICATION_PDF);
-            // headers.setContentDispositionFormData("attachment", "protocol.pdf");
 
             log.info("Downloading File");
             return ResponseEntity.ok().headers(headers).body(baos.toByteArray());
