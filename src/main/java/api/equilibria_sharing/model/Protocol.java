@@ -33,19 +33,37 @@ public class Protocol {
     }
     
     public byte[] getCSV(LocalDate beginDate, LocalDate endDate) {
-        // Kopfzeile für die CSV-Datei
-        StringBuilder csvContent = new StringBuilder("ID,Accommodation,MainPerson,CheckIn,ExpectedCheckOut,ActualCheckOut,TouristTax,PersonCount,persons\n");
+        
 
-        // Beispiel-Daten hinzufügen
-        csvContent.append("123").append(",")
-                .append("Sea View Resort").append(",")
-                .append("John Doe").append(",")
-                .append("2025-01-20").append(",")
-                .append("2025-01-27").append(",")
-                .append("2025-01-26").append(",")
-                .append("true").append(",")
-                .append("3").append(",")
-                .append("Jane Smith; Bob Brown").append("\n");
+        LocalDateTime beginDateTime = beginDate.atStartOfDay();
+        LocalDateTime endDateTime = endDate.atStartOfDay().plusDays(1).minusNanos(1); // Ende des Tages
+    
+        // Abrufen der Buchungen aus der Datenbank
+        List<Booking> bookingList = this.controller.bookingRepository.findAllByCheckInBetween(beginDateTime, endDateTime);
+
+        StringBuilder csvContent = new StringBuilder("ID,Accommodation,MainPerson,CheckIn,ExpectedCheckOut,ActualCheckOut,TouristTax,PersonCount,persons\n");
+        // Buchungsdaten verarbeiten
+        for (Booking booking : bookingList) {
+
+            // Daten zur CSV hinzufügen
+            csvContent.append(booking.getId()).append(",")
+                    .append(booking.getAccommodation() != null ? booking.getAccommodation().getName() : "").append(",")
+                    .append(booking.getMainTraveler() != null ? booking.getMainTraveler().getFirstName() + " " + booking.getMainTraveler().getLastName() : "").append(",")
+                    .append(booking.getCheckIn()).append(",")
+                    .append(booking.getExpectedCheckOut()).append(",")
+                    .append(booking.getActualCheckOut() != null ? booking.getActualCheckOut() : "").append(",")
+                    .append(booking.isTouristTax()).append(",")
+                    .append(booking.getAdditionalGuests().size() + 1).append(",") // Hauptreisender + Gäste
+                    .append(booking.getAdditionalGuests().stream()
+                     .map(guest -> {
+                         String guestName = guest.getFirstName() + " " + guest.getLastName();
+                         String birthDate = guest.getBirthDate() != null ? guest.getBirthDate().toString() : "unknown";
+                         return guestName + " (" + birthDate + ")";
+                     })
+                     .reduce((a, b) -> a + "; " + b)
+                     .orElse(""))
+              .append("\n");
+        }
 
         // Rückgabe des CSV-Inhalts als Byte-Array
         return csvContent.toString().getBytes(StandardCharsets.UTF_8);
