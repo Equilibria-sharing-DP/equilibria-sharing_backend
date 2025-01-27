@@ -1,5 +1,7 @@
 package api.equilibria_sharing.controller;
 
+import api.equilibria_sharing.model.Booking;
+
 // import com.itextpdf.text.Document;
 // import com.itextpdf.text.Paragraph;
 // import com.itextpdf.text.pdf.PdfWriter;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 public class ProtocolController {
@@ -49,14 +52,20 @@ public class ProtocolController {
             log.info("Create File");
             HttpHeaders headers = new HttpHeaders();
 
+
+            //Daten auslesen
+            LocalDateTime beginDateTime = beginDate.atStartOfDay();
+            LocalDateTime endDateTime = endDate.atStartOfDay().plusDays(1).minusNanos(1); // Ende des Tages
+            List<Booking> bookingList = this.bookingRepository.findAllByCheckInBetween(beginDateTime, endDateTime);
+
             if(format.equals("pdf")){ 
-                protocol.getPDF(beginDate,endDate, baos);
+                protocol.getPDF(bookingList, baos);
                 log.info("pdf");
                 headers.setContentType(MediaType.APPLICATION_PDF);
                 headers.setContentDispositionFormData("attachment", "protocol.pdf");
             }
             else if(format.equals("csv")){ 
-                byte[] csvBytes = protocol.getCSV(beginDate, endDate);  // CSV-Daten werden nun als Byte-Array zurückgegeben
+                byte[] csvBytes = protocol.getCSV(bookingList);  // CSV-Daten werden nun als Byte-Array zurückgegeben
                 log.info("csv");
                 headers.setContentType(new MediaType("text", "csv"));
                 headers.setContentDispositionFormData("attachment", "protocol.csv");
