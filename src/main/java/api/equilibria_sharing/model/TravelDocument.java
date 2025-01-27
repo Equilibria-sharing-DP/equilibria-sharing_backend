@@ -11,20 +11,33 @@ public class TravelDocument {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String passportNr;
+    @Enumerated(EnumType.STRING)
+    private TravelDocumentType type;
+
+    private String documentNr;
 
     private String country;
 
     private LocalDate issueDate;
 
+    private LocalDate expiryDate;
+
     private String issuingAuthority;
 
-    public String getPassportNr() {
-        return passportNr;
+    public TravelDocumentType getType() {
+        return type;
     }
 
-    public void setPassportNr(String passportNr) {
-        this.passportNr = passportNr;
+    public void setType(TravelDocumentType type) {
+        this.type = type;
+    }
+
+    public String getDocumentNr() {
+        return documentNr;
+    }
+
+    public void setDocumentNr(String documentNr) {
+        this.documentNr = documentNr;
     }
 
     public String getCountry() {
@@ -51,13 +64,31 @@ public class TravelDocument {
         this.issuingAuthority = issuing_authority;
     }
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public LocalDate getExpiryDate() {
+        return expiryDate;
+    }
+
+    public void setExpiryDate(LocalDate expiryDate) {
+        this.expiryDate = expiryDate;
+    }
+
     @Override
     public String toString() {
         return "TravelDocument{" +
                 "id=" + id +
-                ", passportNr='" + passportNr + '\'' +
+                ", type=" + type +
+                ", documentNr='" + documentNr + '\'' +
                 ", country='" + country + '\'' +
                 ", issueDate=" + issueDate +
+                ", expiryDate=" + expiryDate +
                 ", issuingAuthority='" + issuingAuthority + '\'' +
                 '}';
     }
