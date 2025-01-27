@@ -2,7 +2,6 @@ package api.equilibria_sharing.controller;
 import api.equilibria_sharing.model.*;
 import api.equilibria_sharing.model.requests.*;
 import api.equilibria_sharing.repositories.*;
-import api.equilibria_sharing.utilities.LoadAccommodations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -34,6 +33,11 @@ public class BookingController {
         this.addressRepository = addressRepository;
     }
 
+    /**
+     * createBooking Method - Takes a POST Method from the frontend and saves & processes the form data from customer
+     * @param bookingRequest formdata from customer
+     * @return exception or http created
+     */
     @PostMapping
     public ResponseEntity<Booking> createBooking(@RequestBody BookingRequest bookingRequest) {
         log.info("Create booking request...");
@@ -108,5 +112,129 @@ public class BookingController {
         log.info("Saved booking: {}", savedBooking);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(savedBooking);
+    }
+
+    /**
+     * get a specific booking my id
+     * @param id booking id
+     * @return booking object or throw exception if not found
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<Booking> getBookingById(@PathVariable("id") Long id) {
+        log.info("Fetching booking by id: {}", id);
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found"));
+        return ResponseEntity.ok(booking);
+    }
+
+    /**
+     * Fetch all bookings that are stored in the DB
+     * @return all bookings
+     */
+    @GetMapping
+    public ResponseEntity<List<Booking>> getAllBookings() {
+        log.info("Fetching all bookings");
+        List<Booking> bookings = bookingRepository.findAll();
+        return ResponseEntity.ok(bookings);
+    }
+
+    /**
+     * delete ALL booking entities in the db
+     * @return http OK
+     */
+    @DeleteMapping
+    public ResponseEntity<Booking> deleteAllBookings() {
+        log.info("Deleting all bookings");
+        bookingRepository.deleteAll();
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * delete specific booking from the db
+     * @param id booking id
+     * @return http OK
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Booking> deleteBooking(@PathVariable("id") Long id) {
+        log.info("Deleting booking by id: {}", id);
+        bookingRepository.deleteById(id);
+        return ResponseEntity.ok().build();
+    }
+
+
+    /**
+     * Update a specific booking entry
+     * @param id booking id of entry to edit
+     * @param bookingRequest new data that should replace the old data
+     * @return http ok with updated data or throw exception
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<Booking> updateBooking(@PathVariable("id") Long id, @RequestBody BookingRequest bookingRequest) {
+
+        // get existing booking
+        log.info("Updating booking with id: {}", id);
+        Booking existingBooking = bookingRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found"));
+
+        // get existing accommodation
+        log.info("Fetching accommodation: {}", bookingRequest.getAccommodationId());
+        Accommodation accommodation = accommodationRepository.findById(bookingRequest.getAccommodationId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Accommodation not found"));
+        existingBooking.setAccommodation(accommodation);
+
+        // update the main traveler
+        log.info("Updating main traveler...");
+        Person mainTraveler = existingBooking.getMainTraveler();
+        mainTraveler.setFirstName(bookingRequest.getMainTraveler().getFirstName());
+        mainTraveler.setLastName(bookingRequest.getMainTraveler().getLastName());
+        mainTraveler.setGender(bookingRequest.getMainTraveler().getGender());
+        mainTraveler.setBirthDate(bookingRequest.getMainTraveler().getBirthDate());
+
+        // update address of main traveler
+        Address address = mainTraveler.getAddress();
+        address.setStreet(bookingRequest.getMainTraveler().getStreet());
+        address.setCity(bookingRequest.getMainTraveler().getCity());
+        address.setHouseNumber(bookingRequest.getMainTraveler().getHouseNumber());
+        address.setPostalCode(bookingRequest.getMainTraveler().getPostalCode());
+        address.setAddressAdditional(bookingRequest.getMainTraveler().getAddressAdditional());
+        addressRepository.save(address);
+
+
+        // update the travel document of main traveler
+        TravelDocument travelDocument = new TravelDocument();
+        travelDocument.setPassportNr(bookingRequest.getMainTraveler().getPassportNr());
+        travelDocument.setCountry(bookingRequest.getMainTraveler().getCountry());
+        travelDocument.setIssueDate(bookingRequest.getMainTraveler().getIssueDate());
+        travelDocument.setIssuingAuthority(bookingRequest.getMainTraveler().getIssuingAuthority());
+        mainTraveler.setTravelDocument(travelDocument);
+        personRepository.save(mainTraveler);
+
+        // updating checkIn and expected checkout time
+        existingBooking.setCheckIn(bookingRequest.getCheckIn());
+        existingBooking.setExpectedCheckOut(bookingRequest.getExpectedCheckOut());
+
+        // Clear existing additional guests and add new ones
+        existingBooking.getAdditionalGuests().clear();
+        List<Person> additionalGuests = bookingRequest.getAdditionalGuests().stream().map(guest -> {
+            Person person = new Person();
+            person.setMainTraveler(false);
+            person.setFirstName(guest.getFirstName());
+            person.setLastName(guest.getLastName());
+            person.setBirthDate(guest.getBirthDate());
+            person.setAddress(mainTraveler.getAddress());
+            person.setMainTravelerRef(mainTraveler);
+            personRepository.save(person);
+            return person;
+        }).collect(Collectors.toList());
+        existingBooking.setAdditionalGuests(additionalGuests);
+
+        // Recalculate taxes and age-related info
+        existingBooking.calculateTouristTax();
+        existingBooking.calculatePeopleOver18();
+
+        Booking updatedBooking = bookingRepository.save(existingBooking);
+        log.info("Updated booking: {}", updatedBooking);
+
+        return ResponseEntity.ok(updatedBooking);
     }
 }
