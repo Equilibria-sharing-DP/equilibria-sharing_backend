@@ -8,6 +8,10 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.ss.usermodel.*;
+
+
 import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
@@ -135,6 +139,10 @@ public class Protocol {
 
         temp = booking.getMainTraveler().getAddress().getPostalCode()+" / "+booking.getMainTraveler().getAddress().getCity()+" / Land?";
         innerTable2.addCell(createHalfBoldCell("PLZ/Ort/Staat: ",temp));
+        innerTable2.addCell(new Cell().setBorder(Border.NO_BORDER));
+
+        temp = booking.getAccommodation().getName();
+        innerTable2.addCell(createHalfBoldCell("Mietobjekt: ",temp));
         
         outerTable.addCell(new Cell().add(innerTable).setBorder(Border.NO_BORDER));
         outerTable.addCell(new Cell().add(innerTable2).setBorder(Border.NO_BORDER));
@@ -255,8 +263,50 @@ public class Protocol {
     /*---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
     // Excel
 
-    public Document getExcel(LocalDate beginDate, LocalDate enDate){
-        return null;
+
+    public byte[] getExcel(List<Booking> bookingList) throws java.io.IOException {
+        try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            Sheet sheet = workbook.createSheet("Bookings");
+            
+            // Header-Zeile erstellen
+            Row headerRow = sheet.createRow(0);
+            String[] headers = {"ID", "Accommodation", "MainPerson", "CheckIn", "ExpectedCheckOut", "ActualCheckOut", "TouristTax", "PersonCount", "Persons"};
+            for (int i = 0; i < headers.length; i++) {
+                org.apache.poi.ss.usermodel.Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+            }
+            
+            // Buchungsdaten in das Excel-Sheet schreiben
+            int rowNum = 1;
+            for (Booking booking : bookingList) {
+                Row row = sheet.createRow(rowNum++);
+                
+                row.createCell(0).setCellValue(booking.getId());
+                row.createCell(1).setCellValue(booking.getAccommodation() != null ? booking.getAccommodation().getName() : "");
+                row.createCell(2).setCellValue(booking.getMainTraveler() != null ? booking.getMainTraveler().getFirstName() + " " + booking.getMainTraveler().getLastName() : "");
+                row.createCell(3).setCellValue(booking.getCheckIn().toString());
+                row.createCell(4).setCellValue(booking.getExpectedCheckOut().toString());
+                row.createCell(5).setCellValue(booking.getActualCheckOut() != null ? booking.getActualCheckOut().toString() : "");
+                row.createCell(6).setCellValue(booking.isTouristTax());
+                row.createCell(7).setCellValue(booking.getAdditionalGuests().size() + 1);
+                
+                // Gästeinformationen als String speichern
+                String persons = booking.getAdditionalGuests().stream()
+                        .map(guest -> guest.getFirstName() + " " + guest.getLastName() + " (" + (guest.getBirthDate() != null ? guest.getBirthDate().toString() : "unknown") + ")")
+                        .reduce((a, b) -> a + "; " + b)
+                        .orElse("");
+                
+                row.createCell(8).setCellValue(persons);
+            }
+            
+            // Datei in ByteArray konvertieren
+            workbook.write(outputStream);
+            return outputStream.toByteArray();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return new byte[0];
+
+        }
     }
 
 

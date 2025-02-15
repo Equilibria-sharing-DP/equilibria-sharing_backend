@@ -66,10 +66,11 @@ public class ProtocolController {
                 return ResponseEntity.ok().headers(headers).body(csvBytes);  // CSV als Antwort
             }
             else if (format.equals("xlsx")){ 
-                protocol.getExcel(beginDate,endDate); 
+                byte[] xlsxBytes = protocol.getExcel(bookingList); 
                 log.info("excel");
                 headers.setContentType(new MediaType("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
                 headers.setContentDispositionFormData("attachment", "protocol.xlsx");
+                return ResponseEntity.ok().headers(headers).body(xlsxBytes);
             }
             else { return ResponseEntity.badRequest().body("Falscher Dateityp".getBytes()); }
 
