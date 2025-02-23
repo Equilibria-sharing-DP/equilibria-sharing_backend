@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -117,6 +118,7 @@ public class BookingController {
      * @return booking object or throw exception if not found
      */
     @GetMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Booking> getBookingById(@PathVariable("id") Long id) {
         log.info("Fetching booking by id: {}", id);
         Booking booking = bookingRepository.findById(id)
@@ -129,6 +131,7 @@ public class BookingController {
      * @return all bookings
      */
     @GetMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<Booking>> getAllBookings() {
         log.info("Fetching all bookings");
         List<Booking> bookings = bookingRepository.findAll();
@@ -140,6 +143,7 @@ public class BookingController {
      * @return http OK
      */
     @DeleteMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Booking> deleteAllBookings() {
         log.info("Deleting all bookings");
         bookingRepository.deleteAll();
@@ -152,6 +156,7 @@ public class BookingController {
      * @return http OK
      */
     @DeleteMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Booking> deleteBooking(@PathVariable("id") Long id) {
         log.info("Deleting booking by id: {}", id);
         bookingRepository.deleteById(id);
@@ -166,6 +171,7 @@ public class BookingController {
      * @return http ok with updated data or throw exception
      */
     @PutMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Booking> updateBooking(@PathVariable("id") Long id, @RequestBody BookingRequest bookingRequest) {
 
         // get existing booking

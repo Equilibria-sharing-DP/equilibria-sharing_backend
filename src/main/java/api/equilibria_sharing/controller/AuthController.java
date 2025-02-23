@@ -1,67 +1,65 @@
-//package api.equilibria_sharing.controller;
-//
-//import api.equilibria_sharing.model.Employee;
-//import api.equilibria_sharing.model.Roles;
-//import api.equilibria_sharing.repositories.EmployeeRepository;
-//import org.apache.coyote.Response;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.beans.factory.annotation.Value;
-//import org.springframework.http.HttpStatus;
-//import org.springframework.http.ResponseEntity;
-//import org.springframework.security.crypto.password.PasswordEncoder;
-//import org.springframework.web.bind.annotation.*;
-//
-//import javax.servlet.http.HttpSession;
-//import java.util.List;
-//import java.util.Optional;
-//
-//@RestController
-//@RequestMapping("/api/v1/auth")
-//public class AuthController {
-//    @Autowired
-//    private EmployeeRepository employeeRepository;
-//
-//    @Autowired
-//    private PasswordEncoder passwordEncoder;
-//
-//    @Value("${app.secret.code")
-//    private String secretCode;
-//
-//    @PostMapping("/register")
-//    public ResponseEntity<Employee> register(@RequestBody Employee employee, @RequestParam String code) {
-//        // Check secret code
-//        if (!code.equals(secretCode)) {
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-//        }
-//
-//        // Check if username already exists
-//        if (employeeRepository.findByUsername(employee.getUsername()).isPresent()) {
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-//        }
-//
-//        // Set default role and encode password
-//        employee.setRoles(List.of(Roles.ADMIN));
-//        employee.setPassword(passwordEncoder.encode(employee.getPassword()));
-//        employeeRepository.save(employee);
-//        return ResponseEntity.ok(employee);
-//    }
-//
-//    @PostMapping("/login")
-//    public String login(@RequestBody Employee loginRequest, HttpSession session) {
-//        Optional<Employee> employee = employeeRepository.findByUsername(loginRequest.getUsername());
-//
-//        if (employee.isPresent() && passwordEncoder.matches(loginRequest.getPassword(), employee.get().getPassword())) {
-//            // Store user details in session
-//            session.setAttribute("user", employee.get());
-//            return "Login successful. Session created.";
-//        }
-//
-//        return "Invalid username or password.";
-//    }
-//
-//    @GetMapping("/logout")
-//    public String logout(HttpSession session) {
-//        session.invalidate();
-//        return "Logged out successfully.";
-//    }
-//}
+package api.equilibria_sharing.controller;
+
+import api.equilibria_sharing.model.Employee;
+import api.equilibria_sharing.model.Roles;
+import api.equilibria_sharing.model.requests.LoginRequest;
+import api.equilibria_sharing.model.requests.RegisterRequest;
+import api.equilibria_sharing.repositories.EmployeeRepository;
+import api.equilibria_sharing.services.JwtService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Value;
+
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/api/v1/auth")
+public class AuthController {
+
+    @Autowired
+    private EmployeeRepository employeeRepository;
+
+    @Autowired
+    private JwtService jwtService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    // Registrierungscode aus application.properties laden
+    @Value("${employeeRegistrationCode}")
+    private String employeeRegistrationCode;
+
+    @PostMapping("/login")
+    public String login(@RequestBody LoginRequest loginRequest) {
+        Employee employee = employeeRepository.findByUsername(loginRequest.getUsername());
+        if (employee != null && passwordEncoder.matches(loginRequest.getPassword(), employee.getPassword())) {
+            return jwtService.generateToken(employee.getUsername());
+        }
+        throw new RuntimeException("Invalid credentials");
+    }
+
+    @PostMapping("/register")
+    public String register(@RequestBody RegisterRequest registerRequest) {
+        if (employeeRepository.findByUsername(registerRequest.getUsername()) != null) {
+            throw new RuntimeException("Username already exists");
+        }
+
+        if (!isValidUniqueCode(registerRequest.getUniqueCode())) {
+            throw new RuntimeException("Invalid registration code");
+        }
+
+        Employee newEmployee = new Employee();
+        newEmployee.setUsername(registerRequest.getUsername());
+        newEmployee.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
+        newEmployee.addRole(Roles.EMPLOYEE);
+        newEmployee.setUsedRegistrationCode(employeeRegistrationCode);
+        employeeRepository.save(newEmployee);
+
+        return "Registration successful";
+    }
+
+    private boolean isValidUniqueCode(String code) {
+        return employeeRegistrationCode.equals(code);
+    }
+}
