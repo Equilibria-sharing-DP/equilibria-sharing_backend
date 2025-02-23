@@ -1,0 +1,38 @@
+version: '3'
+services:
+  mariadb:
+    image: 'mariadb:latest'
+    environment:
+      - 'MARIADB_DATABASE=mydatabase'
+      - 'MARIADB_PASSWORD=secret'
+      - 'MARIADB_ROOT_PASSWORD=verysecret'
+      - 'MARIADB_USER=myuser'
+    ports:
+      - '3306:3306'
+    networks:
+      - mynetwork
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--user=root", "--password=verysecret"]
+      interval: 30s
+      retries: 5
+      start_period: 10s
+      timeout: 10s
+
+  backend:
+    image: bast1sa1ler/equilibria-sharing_backend:latest 
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=mariadb    # Verweist auf den MariaDB-Service
+      - DB_USER=myuser
+      - DB_PASSWORD=secret
+      - DB_NAME=mydatabase
+    networks:
+      - mynetwork
+    depends_on:
+      - mariadb  # Verweist auf den MariaDB-Container
+    restart: always  # Sicherstellen, dass der Container neu startet, wenn ein Fehler auftritt
+
+networks:
+  mynetwork:
+    driver: bridge
