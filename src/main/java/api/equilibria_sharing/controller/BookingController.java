@@ -56,20 +56,17 @@ public class BookingController {
         mainTraveler.setGender(bookingRequest.getMainTraveler().getGender());
         mainTraveler.setBirthDate(bookingRequest.getMainTraveler().getBirthDate());
 
-        log.info("Main traveler after setting personal data: {}", mainTraveler);
-
         // create & save address of main traveler
         Address address = new Address();
         address.setStreet(bookingRequest.getMainTraveler().getStreet());
         address.setCity(bookingRequest.getMainTraveler().getCity());
+        address.setCountry(bookingRequest.getMainTraveler().getCountry());
         address.setHouseNumber(bookingRequest.getMainTraveler().getHouseNumber());
         address.setPostalCode(bookingRequest.getMainTraveler().getPostalCode());
         address.setAddressAdditional(bookingRequest.getMainTraveler().getAddressAdditional());
         addressRepository.save(address);
 
         mainTraveler.setAddress(address);
-
-        log.info("Main traveler after setting address: {}", mainTraveler);
 
         TravelDocument travelDocument = new TravelDocument();
         travelDocument.setType(bookingRequest.getMainTraveler().getTravelDocumentType());
@@ -81,8 +78,6 @@ public class BookingController {
 
         mainTraveler.setTravelDocument(travelDocument);
         personRepository.save(mainTraveler);
-
-        log.info("Main traveler after setting travel document & saving: {}", mainTraveler);
 
         // Create Booking
         Booking booking = new Booking();
@@ -196,6 +191,7 @@ public class BookingController {
         Address address = mainTraveler.getAddress();
         address.setStreet(bookingRequest.getMainTraveler().getStreet());
         address.setCity(bookingRequest.getMainTraveler().getCity());
+        address.setCountry(bookingRequest.getMainTraveler().getCountry());
         address.setHouseNumber(bookingRequest.getMainTraveler().getHouseNumber());
         address.setPostalCode(bookingRequest.getMainTraveler().getPostalCode());
         address.setAddressAdditional(bookingRequest.getMainTraveler().getAddressAdditional());
@@ -237,7 +233,6 @@ public class BookingController {
         existingBooking.calculatePeopleOver18();
 
         Booking updatedBooking = bookingRepository.save(existingBooking);
-        log.info("Updated booking: {}", updatedBooking);
 
         return ResponseEntity.ok(updatedBooking);
     }
