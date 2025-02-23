@@ -13,9 +13,8 @@ public class LoginLogService {
     @Autowired
     private LoginLogRepository loginLogRepository;
 
-    public void logLogin(String username, String userAgent) {
-        LoginLog log = new LoginLog(username, LocalDateTime.now(), userAgent);
+    public void logLogin(String username, String userAgent, String ipAddress) {
+        LoginLog log = new LoginLog(username, LocalDateTime.now(), userAgent, ipAddress);
         loginLogRepository.save(log);
     }
 }
-

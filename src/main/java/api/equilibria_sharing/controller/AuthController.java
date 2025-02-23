@@ -35,15 +35,20 @@ public class AuthController {
     @Autowired
     private LoginLogService loginLogService;
 
+
     @PostMapping("/login")
     public String login(@RequestBody LoginRequest loginRequest, HttpServletRequest request) {
         Employee employee = employeeRepository.findByUsername(loginRequest.getUsername());
         if (employee != null && passwordEncoder.matches(loginRequest.getPassword(), employee.getPassword())) {
-            // User-Agent auslesen
+            // User-Agent und IP-Adresse erfassen
             String userAgent = request.getHeader("User-Agent");
+            String ipAddress = request.getHeader("X-Forwarded-For"); // Falls die App hinter einem Proxy läuft
+            if (ipAddress == null) {
+                ipAddress = request.getRemoteAddr(); // Fallback, falls kein Proxy
+            }
 
-            // Login loggen mit User-Agent
-            loginLogService.logLogin(employee.getUsername(), userAgent);
+            // Login mit User-Agent und IP-Adresse loggen
+            loginLogService.logLogin(employee.getUsername(), userAgent, ipAddress);
 
             return jwtService.generateToken(employee.getUsername());
         }

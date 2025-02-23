@@ -13,13 +13,15 @@ public class LoginLog {
     private String username;
     private LocalDateTime loginTime;
     private String userAgent;
+    private String ipAddress;
 
     public LoginLog() {}
 
-    public LoginLog(String username, LocalDateTime loginTime, String userAgent) {
+    public LoginLog(String username, LocalDateTime loginTime, String userAgent, String ipAddress) {
         this.username = username;
         this.loginTime = loginTime;
         this.userAgent = userAgent;
+        this.ipAddress = ipAddress;
     }
 
     public Long getId() { return id; }
@@ -29,5 +31,13 @@ public class LoginLog {
     public void setLoginTime(LocalDateTime loginTime) { this.loginTime = loginTime; }
     public String getUserAgent() { return userAgent; }
     public void setUserAgent(String userAgent) { this.userAgent = userAgent; }
+
+    public String getIpAddress() {
+        return ipAddress;
+    }
+
+    public void setIpAddress(String ipAddress) {
+        this.ipAddress = ipAddress;
+    }
 }
 
