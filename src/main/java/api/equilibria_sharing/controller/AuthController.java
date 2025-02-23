@@ -35,7 +35,7 @@ public class AuthController {
     @Autowired
     private LoginLogService loginLogService;
 
-
+    @CrossOrigin
     @PostMapping("/login")
     public String login(@RequestBody LoginRequest loginRequest, HttpServletRequest request) {
         Employee employee = employeeRepository.findByUsername(loginRequest.getUsername());
@@ -55,6 +55,7 @@ public class AuthController {
         throw new RuntimeException("Invalid credentials");
     }
 
+    @CrossOrigin
     @PostMapping("/register")
     public String register(@RequestBody RegisterRequest registerRequest) {
         if (employeeRepository.findByUsername(registerRequest.getUsername()) != null) {

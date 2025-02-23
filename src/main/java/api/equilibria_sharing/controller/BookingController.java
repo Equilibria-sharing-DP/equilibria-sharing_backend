@@ -40,6 +40,7 @@ public class BookingController {
      * @return exception or http created
      */
     @PostMapping
+    @CrossOrigin
     public ResponseEntity<Booking> createBooking(@RequestBody BookingRequest bookingRequest) {
         log.info("Create booking request...");
         log.info("Fetching accommodation: {}", bookingRequest.getAccommodationId());
@@ -118,6 +119,7 @@ public class BookingController {
      * @return booking object or throw exception if not found
      */
     @GetMapping("/{id}")
+    @CrossOrigin
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Booking> getBookingById(@PathVariable("id") Long id) {
         log.info("Fetching booking by id: {}", id);
@@ -131,6 +133,7 @@ public class BookingController {
      * @return all bookings
      */
     @GetMapping
+    @CrossOrigin
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<Booking>> getAllBookings() {
         log.info("Fetching all bookings");
@@ -143,6 +146,7 @@ public class BookingController {
      * @return http OK
      */
     @DeleteMapping
+    @CrossOrigin
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Booking> deleteAllBookings() {
         log.info("Deleting all bookings");
@@ -156,6 +160,7 @@ public class BookingController {
      * @return http OK
      */
     @DeleteMapping("/{id}")
+    @CrossOrigin
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Booking> deleteBooking(@PathVariable("id") Long id) {
         log.info("Deleting booking by id: {}", id);
@@ -171,6 +176,7 @@ public class BookingController {
      * @return http ok with updated data or throw exception
      */
     @PutMapping("/{id}")
+    @CrossOrigin
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Booking> updateBooking(@PathVariable("id") Long id, @RequestBody BookingRequest bookingRequest) {
 
