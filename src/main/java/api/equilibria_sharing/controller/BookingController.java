@@ -13,6 +13,12 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Booking Controller - manage all Booking entries
+ *
+ * @author Manuel Fellner
+ * @version 23.02.2025
+ */
 @RestController
 @RequestMapping("/api/v1/bookings")
 public class BookingController {
@@ -69,6 +75,7 @@ public class BookingController {
 
         mainTraveler.setAddress(address);
 
+        // create and save the travel document of main traveler
         TravelDocument travelDocument = new TravelDocument();
         travelDocument.setType(bookingRequest.getMainTraveler().getTravelDocumentType());
         travelDocument.setDocumentNr(bookingRequest.getMainTraveler().getDocumentNr());
@@ -94,6 +101,7 @@ public class BookingController {
             person.setFirstName(guest.getFirstName());
             person.setLastName(guest.getLastName());
             person.setBirthDate(guest.getBirthDate());
+            // set the address the same as the main traveler due to placeholder reasons
             person.setAddress(address);
             person.setMainTravelerRef(mainTraveler);
             personRepository.save(person);

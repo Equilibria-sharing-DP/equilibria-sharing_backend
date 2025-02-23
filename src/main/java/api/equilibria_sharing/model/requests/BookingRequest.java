@@ -1,9 +1,14 @@
 package api.equilibria_sharing.model.requests;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * BookingRequest class - Just a placeholder class for BookingRequests
+ *
+ * @author Manuel Fellner
+ * @version 23.02.2025
+ */
 public class BookingRequest {
     private Long accommodationId;
     private MainTravelerRequest mainTraveler;

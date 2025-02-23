@@ -1,10 +1,15 @@
 package api.equilibria_sharing.model;
 
 import jakarta.persistence.*;
-import org.springframework.boot.autoconfigure.amqp.RabbitConnectionDetails;
 
 import java.time.LocalDate;
 
+/**
+ * person entity
+ *
+ * @author Manuel Fellner
+ * @version 23.02.2025
+ */
 @Entity
 public class Person {
     @Id

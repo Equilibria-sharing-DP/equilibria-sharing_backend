@@ -4,6 +4,12 @@ import jakarta.persistence.*;
 
 import java.time.LocalDate;
 
+/**
+ * TravelDocument class - stores all traveldocument characteristics
+ *
+ * @author Manuel Fellner
+ * @version 23.02.2025
+ */
 @Entity
 public class TravelDocument {
 

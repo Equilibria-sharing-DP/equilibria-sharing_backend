@@ -3,6 +3,12 @@ package api.equilibria_sharing.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+/**
+ * LoginLog Entity - for logging each employee login
+ *
+ * @author Manuel Fellner
+ * @version 23.02.2025
+ */
 @Entity
 public class LoginLog {
 

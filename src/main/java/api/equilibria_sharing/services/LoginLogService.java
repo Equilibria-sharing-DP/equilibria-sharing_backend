@@ -7,6 +7,12 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
+/**
+ * JwtService - Service that logs employee logins with username LocalDateTime, userAgent and ipAddress
+ *
+ * @author Manuel Fellner
+ * @version 23.02.2025
+ */
 @Service
 public class LoginLogService {
 

@@ -3,8 +3,8 @@ package api.equilibria_sharing.services;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
@@ -13,16 +13,28 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+/**
+ * JwtService - Service that enables working with JWT Tokens to secure this application
+ *
+ * @author Manuel Fellner
+ * @version 23.02.2025
+ */
 @Service
 public class JwtService {
 
-    private final String SECRET_KEY = "q68z3W!higm^9$*l@946gl5nn8@f&PoqlK3@Kpy%RE%Kzgc7Hzi8t%f#7#fFuhfE2d$kQYqUDcfdFXtm4wbtQNG6aPJ*6w";
+    private String secretKey;
 
-    // Erzeuge einen HMAC SHA-256 Schlüssel aus dem SECRET_KEY
-    private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
+    // load secret key from the application.properties file
+    public JwtService(@Value("${secretJwtKey}") String secretKey) {
+        this.secretKey = secretKey.isEmpty() ? "q68z3W!higm^9$*l@946gl5nn8@f&PoqlK3@Kpy%RE%Kzgc7Hzi8t%f#7#fFuhfE2d$kQYqUDcfdFXtm4wbtQNG6aPJ*6w" : secretKey;
     }
 
+    // generate an HMAC SHA-256 key out of the secret key
+    private Key getSigningKey() {
+        return Keys.hmacShaKeyFor(secretKey.getBytes());
+    }
+
+    // method to exctract employee username out of a JWT token
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }

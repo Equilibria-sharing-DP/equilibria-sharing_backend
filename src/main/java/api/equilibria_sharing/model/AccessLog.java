@@ -4,6 +4,12 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 
+/**
+ * AccessLog Entity - For employee accesses
+ *
+ * @author Manuel Fellner
+ * @version 23.02.2025
+ */
 @Entity
 public class AccessLog {
 

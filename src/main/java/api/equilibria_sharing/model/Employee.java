@@ -5,6 +5,12 @@ import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Accommodation entity - for the company's employees
+ *
+ * @author Manuel Fellner
+ * @version 23.02.2025
+ */
 @Entity
 public class Employee {
     @Id
@@ -18,6 +24,7 @@ public class Employee {
     @ElementCollection(fetch = FetchType.EAGER)
     private List<Roles> roles = new ArrayList<>();
 
+    // registration code that was used to register this employee
     private String usedRegistrationCode;
 
     public String getUsername() {

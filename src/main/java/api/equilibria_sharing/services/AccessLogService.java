@@ -7,6 +7,13 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
+/**
+ * AccessLogsService - provides method that logs all accesses of employees, including the
+ * username, endpoint, httpMethod, userAgent and the current LocalDateTime
+ *
+ * @author Manuel Fellner
+ * @version 23.02.2025
+ */
 @Service
 public class AccessLogService {
 

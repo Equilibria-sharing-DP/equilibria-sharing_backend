@@ -1,9 +1,13 @@
 package api.equilibria_sharing.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
+/**
+ * Accommodation entity - for the company's accommodations
+ *
+ * @author Manuel Fellner
+ * @version 23.02.2025
+ */
 @Entity
 public class Accommodation {
     @Id

@@ -7,7 +7,7 @@ import jakarta.persistence.*;
  * Address class
  *
  * @author Manuel Fellner
- * @version 23.11.2024
+ * @version 23.02.2025
  */
 @Entity
 public class Address {

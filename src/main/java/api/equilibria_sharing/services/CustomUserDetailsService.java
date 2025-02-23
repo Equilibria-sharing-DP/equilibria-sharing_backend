@@ -9,6 +9,13 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+/**
+ * CustomUserDetailsService - spring boot functionality, that should fetch the employee details to enable
+ * a smooth and security registration and login functionality
+ *
+ * @author Manuel Fellner
+ * @version 23.02.2025
+ */
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
