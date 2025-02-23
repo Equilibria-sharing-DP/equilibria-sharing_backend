@@ -6,6 +6,8 @@ import api.equilibria_sharing.model.requests.LoginRequest;
 import api.equilibria_sharing.model.requests.RegisterRequest;
 import api.equilibria_sharing.repositories.EmployeeRepository;
 import api.equilibria_sharing.services.JwtService;
+import api.equilibria_sharing.services.LoginLogService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -30,10 +32,19 @@ public class AuthController {
     @Value("${employeeRegistrationCode}")
     private String employeeRegistrationCode;
 
+    @Autowired
+    private LoginLogService loginLogService;
+
     @PostMapping("/login")
-    public String login(@RequestBody LoginRequest loginRequest) {
+    public String login(@RequestBody LoginRequest loginRequest, HttpServletRequest request) {
         Employee employee = employeeRepository.findByUsername(loginRequest.getUsername());
         if (employee != null && passwordEncoder.matches(loginRequest.getPassword(), employee.getPassword())) {
+            // User-Agent auslesen
+            String userAgent = request.getHeader("User-Agent");
+
+            // Login loggen mit User-Agent
+            loginLogService.logLogin(employee.getUsername(), userAgent);
+
             return jwtService.generateToken(employee.getUsername());
         }
         throw new RuntimeException("Invalid credentials");

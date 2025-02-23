@@ -24,6 +24,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private UserDetailsService userDetailsService;
 
+    @Autowired
+    private AccessLogService accessLogService;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
@@ -32,16 +35,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String jwtToken;
         final String username;
 
-        // Prüfen, ob der Header existiert und gültig ist
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        jwtToken = authHeader.substring(7); // "Bearer " entfernen
+        jwtToken = authHeader.substring(7);
         username = jwtService.extractUsername(jwtToken);
 
-        // Authentifizieren, falls der Benutzer nicht schon angemeldet ist
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
@@ -51,10 +52,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+
+                // User-Agent aus dem Header holen
+                String userAgent = request.getHeader("User-Agent");
+
+                // Zugriff mit User-Agent loggen
+                accessLogService.logAccess(
+                        username,
+                        request.getRequestURI(),
+                        request.getMethod(),
+                        userAgent
+                );
             }
         }
 
         filterChain.doFilter(request, response);
     }
+
 }
 
