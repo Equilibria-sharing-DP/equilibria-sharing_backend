@@ -16,6 +16,34 @@ Und, wenn man es besonders leicht haben möchte:
 Als nächstes sollte man das Projekt mit dem Ausführen der `EquilibriaSharingApplication.java` Datei starten können.
 Die Datenbank sollte sich automatisch per Docker aufsetzen und eine Verbindung aufbauen.
 
+Als nächstes muss ein File namens `application.properties` im `/resources` Folder erstellt werden, welches die folgende Struktur haben soll:
+
+
+```text
+spring.application.name=equilibria-sharing
+
+# MariaDB connection properties, TEMPORARY DATA!
+spring.datasource.url=jdbc:mariadb://localhost:3306/mydatabase
+spring.datasource.username=myuser
+spring.datasource.password=secret
+
+# JDBC driver for MariaDB
+spring.datasource.driver-class-name=org.mariadb.jdbc.Driver
+
+# Hibernate properties (optional, for JPA usage)
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.database-platform=org.hibernate.dialect.MariaDBDialect
+
+
+server.servlet.session.timeout=30m
+
+employeeRegistrationCode=code
+
+secretJwtKey=keys
+```
+
+Make sure to replace each of these attributes with your own secure ones.
+
 ### API Dokumentation - BookingController & AuthController
 
 ## Authentifizierung in der Anwendung
