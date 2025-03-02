@@ -3,10 +3,6 @@ package api.equilibria_sharing.controller;
 import api.equilibria_sharing.model.Accommodation;
 import api.equilibria_sharing.model.Booking;
 
-// import com.itextpdf.text.Document;
-// import com.itextpdf.text.Paragraph;
-// import com.itextpdf.text.pdf.PdfWriter;
-
 import api.equilibria_sharing.model.Protocol;
 import api.equilibria_sharing.repositories.*;
 
@@ -16,6 +12,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,7 +22,14 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Protocol Controller - Controller for exporting bookings as PDF/CSV/Excel
+ *
+ * @author Sebastian Sailer
+ * @version 02.03.2025
+ */
 @RestController
+@PreAuthorize("isAuthenticated()")
 public class ProtocolController {
     private static final Logger log = LoggerFactory.getLogger(ProtocolController.class);
 
@@ -65,28 +69,33 @@ public class ProtocolController {
                 bookingList = this.bookingRepository.findByAccommodationAndCheckInBetween(a,beginDateTime, endDateTime);
             }
 
-            
-            if(format.equals("pdf")){ 
-                protocol.getPDF(bookingList, baos);
-                log.info("pdf");
-                headers.setContentType(MediaType.APPLICATION_PDF);
-                headers.setContentDispositionFormData("attachment", "protocol.pdf");
+
+            switch (format) {
+                case "pdf" -> {
+                    protocol.getPDF(bookingList, baos);
+                    log.info("pdf");
+                    headers.setContentType(MediaType.APPLICATION_PDF);
+                    headers.setContentDispositionFormData("attachment", "protocol.pdf");
+                }
+                case "csv" -> {
+                    byte[] csvBytes = protocol.getCSV(bookingList);  // CSV-Daten werden nun als Byte-Array zurückgegeben
+
+                    log.info("csv");
+                    headers.setContentType(new MediaType("text", "csv"));
+                    headers.setContentDispositionFormData("attachment", "protocol.csv");
+                    return ResponseEntity.ok().headers(headers).body(csvBytes);  // CSV als Antwort
+                }
+                case "xlsx" -> {
+                    byte[] xlsxBytes = protocol.getExcel(bookingList);
+                    log.info("excel");
+                    headers.setContentType(new MediaType("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+                    headers.setContentDispositionFormData("attachment", "protocol.xlsx");
+                    return ResponseEntity.ok().headers(headers).body(xlsxBytes);
+                }
+                default -> {
+                    return ResponseEntity.badRequest().body("Falscher Dateityp".getBytes());
+                }
             }
-            else if(format.equals("csv")){ 
-                byte[] csvBytes = protocol.getCSV(bookingList);  // CSV-Daten werden nun als Byte-Array zurückgegeben
-                log.info("csv");
-                headers.setContentType(new MediaType("text", "csv"));
-                headers.setContentDispositionFormData("attachment", "protocol.csv");
-                return ResponseEntity.ok().headers(headers).body(csvBytes);  // CSV als Antwort
-            }
-            else if (format.equals("xlsx")){ 
-                byte[] xlsxBytes = protocol.getExcel(bookingList); 
-                log.info("excel");
-                headers.setContentType(new MediaType("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
-                headers.setContentDispositionFormData("attachment", "protocol.xlsx");
-                return ResponseEntity.ok().headers(headers).body(xlsxBytes);
-            }
-            else { return ResponseEntity.badRequest().body("Falscher Dateityp".getBytes()); }
 
             log.info("Downloading File");
             return ResponseEntity.ok().headers(headers).body(baos.toByteArray());
@@ -110,9 +119,5 @@ public class ProtocolController {
         
         return ResponseEntity.ok("Daten empfangen");
     }
-    public void logging(String a){
-        log.info(a);
-    }
-
 }
 
