@@ -1,9 +1,16 @@
 package api.equilibria_sharing.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Accommodation entity - for the company's accommodations
+ *
+ * @author Manuel Fellner
+ * @version 02.03a.2025
+ */
 @Entity
 public class Accommodation {
     @Id
@@ -19,6 +26,9 @@ public class Accommodation {
 
     private int maxGuests;
     private double pricePerNight;
+
+    @ElementCollection
+    private List<String> pictureUrls;
 
     public Accommodation(String name, String type, String description, Address address, int maxGuests, double pricePerNight) {
         this.name = name;
@@ -69,11 +79,11 @@ public class Accommodation {
         this.address = address;
     }
 
-    public Integer getMaxGuests() {
+    public int getMaxGuests() {
         return maxGuests;
     }
 
-    public void setMaxGuests(Integer maxGuests) {
+    public void setMaxGuests(int maxGuests) {
         this.maxGuests = maxGuests;
     }
 
@@ -83,6 +93,32 @@ public class Accommodation {
 
     public void setPricePerNight(Double pricePerNight) {
         this.pricePerNight = pricePerNight;
+    }
+
+    public void setPricePerNight(double pricePerNight) {
+        this.pricePerNight = pricePerNight;
+    }
+
+    public List<String> getPictureUrls() {
+        return pictureUrls;
+    }
+
+    public void setPictureUrls(List<String> pictureUrls) {
+        this.pictureUrls = pictureUrls;
+    }
+
+    @Override
+    public String toString() {
+        return "Accommodation{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", type='" + type + '\'' +
+                ", description='" + description + '\'' +
+                ", address=" + address +
+                ", maxGuests=" + maxGuests +
+                ", pricePerNight=" + pricePerNight +
+                ", pictureUrls=" + pictureUrls +
+                '}';
     }
 }
 

@@ -16,7 +16,7 @@ public class LoadAccommodations {
 
     @Bean
     CommandLineRunner commandLineRunner(AccommodationRepository accommodationRepository, AddressRepository addressRepository) {
-        Address address = new Address("Vienna", 1200, "Wexstrasse", 23, null);
+        Address address = new Address("Vienna", "Austria", 1200, "Wexstrasse", 23, null);
         addressRepository.save(address);
         return args -> {
             log.info("Preloading " + accommodationRepository.save(new Accommodation("TGM", "Apartment", "Wonderful apartment ahh", address, 3000, 27)));

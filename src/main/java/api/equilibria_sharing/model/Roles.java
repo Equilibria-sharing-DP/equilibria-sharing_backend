@@ -1,11 +1,11 @@
 package api.equilibria_sharing.model;
 
 /**
- * Country Enum
+ * Employee Roles enum
  *
  * @author Manuel Fellner
  * @version 23.02.2025
  */
-public enum Country {
-    AUSTRIA, ITALY
+public enum Roles {
+    ADMIN, DEVELOPER, EMPLOYEE
 }

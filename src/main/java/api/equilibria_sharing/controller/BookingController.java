@@ -1,4 +1,6 @@
 package api.equilibria_sharing.controller;
+import api.equilibria_sharing.exceptions.BadRequestException;
+import api.equilibria_sharing.exceptions.ResourceNotFoundException;
 import api.equilibria_sharing.model.*;
 import api.equilibria_sharing.model.requests.*;
 import api.equilibria_sharing.repositories.*;
@@ -6,12 +8,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Booking Controller - manage all Booking entries
+ *
+ * @author Manuel Fellner
+ * @version 23.02.2025
+ */
 @RestController
 @RequestMapping("/api/v1/bookings")
 public class BookingController {
@@ -40,11 +49,14 @@ public class BookingController {
      */
     @PostMapping
     public ResponseEntity<Booking> createBooking(@RequestBody BookingRequest bookingRequest) {
+        if (bookingRequest.getAccommodationId() == null || bookingRequest.getMainTraveler() == null) {
+            throw new BadRequestException("Accommodation ID and Main Traveler must be provided");
+        }
         log.info("Create booking request...");
         log.info("Fetching accommodation: {}", bookingRequest.getAccommodationId());
         // Fetch Accommodation
         Accommodation accommodation = accommodationRepository.findById(bookingRequest.getAccommodationId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Accommodation not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Accommodation not found"));
         log.info("Accommodation: {}", accommodation);
 
         log.info("Initializing main traveler...");
@@ -56,12 +68,11 @@ public class BookingController {
         mainTraveler.setGender(bookingRequest.getMainTraveler().getGender());
         mainTraveler.setBirthDate(bookingRequest.getMainTraveler().getBirthDate());
 
-        log.info("Main traveler after setting personal data: {}", mainTraveler);
-
         // create & save address of main traveler
         Address address = new Address();
         address.setStreet(bookingRequest.getMainTraveler().getStreet());
         address.setCity(bookingRequest.getMainTraveler().getCity());
+        address.setCountry(bookingRequest.getMainTraveler().getCountry());
         address.setHouseNumber(bookingRequest.getMainTraveler().getHouseNumber());
         address.setPostalCode(bookingRequest.getMainTraveler().getPostalCode());
         address.setAddressAdditional(bookingRequest.getMainTraveler().getAddressAdditional());
@@ -69,8 +80,7 @@ public class BookingController {
 
         mainTraveler.setAddress(address);
 
-        log.info("Main traveler after setting address: {}", mainTraveler);
-
+        // create and save the travel document of main traveler
         TravelDocument travelDocument = new TravelDocument();
         travelDocument.setType(bookingRequest.getMainTraveler().getTravelDocumentType());
         travelDocument.setDocumentNr(bookingRequest.getMainTraveler().getDocumentNr());
@@ -81,8 +91,6 @@ public class BookingController {
 
         mainTraveler.setTravelDocument(travelDocument);
         personRepository.save(mainTraveler);
-
-        log.info("Main traveler after setting travel document & saving: {}", mainTraveler);
 
         // Create Booking
         Booking booking = new Booking();
@@ -98,6 +106,7 @@ public class BookingController {
             person.setFirstName(guest.getFirstName());
             person.setLastName(guest.getLastName());
             person.setBirthDate(guest.getBirthDate());
+            // set the address the same as the main traveler due to placeholder reasons
             person.setAddress(address);
             person.setMainTravelerRef(mainTraveler);
             personRepository.save(person);
@@ -122,10 +131,11 @@ public class BookingController {
      * @return booking object or throw exception if not found
      */
     @GetMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Booking> getBookingById(@PathVariable("id") Long id) {
         log.info("Fetching booking by id: {}", id);
         Booking booking = bookingRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Booking with ID " + id + " not found"));
         return ResponseEntity.ok(booking);
     }
 
@@ -134,6 +144,7 @@ public class BookingController {
      * @return all bookings
      */
     @GetMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<Booking>> getAllBookings() {
         log.info("Fetching all bookings");
         List<Booking> bookings = bookingRepository.findAll();
@@ -145,8 +156,9 @@ public class BookingController {
      * @return http OK
      */
     @DeleteMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Booking> deleteAllBookings() {
-        log.info("Deleting all bookings");
+        log.warn("Deleting all bookings");
         bookingRepository.deleteAll();
         return ResponseEntity.ok().build();
     }
@@ -157,8 +169,11 @@ public class BookingController {
      * @return http OK
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Booking> deleteBooking(@PathVariable("id") Long id) {
-        log.info("Deleting booking by id: {}", id);
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Booking> deleteBookingById(@PathVariable("id") Long id) {
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking with ID " + id + " not found"));
+        log.warn("Deleting booking by id: {}", id);
         bookingRepository.deleteById(id);
         return ResponseEntity.ok().build();
     }
@@ -171,6 +186,7 @@ public class BookingController {
      * @return http ok with updated data or throw exception
      */
     @PutMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Booking> updateBooking(@PathVariable("id") Long id, @RequestBody BookingRequest bookingRequest) {
 
         // get existing booking
@@ -181,7 +197,7 @@ public class BookingController {
         // get existing accommodation
         log.info("Fetching accommodation: {}", bookingRequest.getAccommodationId());
         Accommodation accommodation = accommodationRepository.findById(bookingRequest.getAccommodationId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Accommodation not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Accommodation not found"));
         existingBooking.setAccommodation(accommodation);
 
         // update the main traveler
@@ -196,6 +212,7 @@ public class BookingController {
         Address address = mainTraveler.getAddress();
         address.setStreet(bookingRequest.getMainTraveler().getStreet());
         address.setCity(bookingRequest.getMainTraveler().getCity());
+        address.setCountry(bookingRequest.getMainTraveler().getCountry());
         address.setHouseNumber(bookingRequest.getMainTraveler().getHouseNumber());
         address.setPostalCode(bookingRequest.getMainTraveler().getPostalCode());
         address.setAddressAdditional(bookingRequest.getMainTraveler().getAddressAdditional());
@@ -237,8 +254,28 @@ public class BookingController {
         existingBooking.calculatePeopleOver18();
 
         Booking updatedBooking = bookingRepository.save(existingBooking);
-        log.info("Updated booking: {}", updatedBooking);
 
         return ResponseEntity.ok(updatedBooking);
     }
+
+    /**
+     * Fetch all bookings for a specific accommodation
+     * @param id ID of the accommodation
+     * @return List of bookings for the given accommodation
+     */
+    @GetMapping("/accommodation/{id}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<Booking>> getBookingsByAccommodation(@PathVariable("id") Long id) {
+        log.info("Fetching bookings for accommodation with id: {}", id);
+
+        // check if the accommodation exists
+        Accommodation accommodation = accommodationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Accommodation not found"));
+
+        // Get all booking entries regarding this accommodation
+        List<Booking> bookings = bookingRepository.findByAccommodation(accommodation);
+
+        return ResponseEntity.ok(bookings);
+    }
+
 }

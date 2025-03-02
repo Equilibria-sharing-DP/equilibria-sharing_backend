@@ -7,6 +7,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Accommodation entity - for the booking process
+ *
+ * @author Manuel Fellner
+ * @version 23.02.2025
+ */
 @Entity
 public class Booking {
     @Id
@@ -17,10 +23,10 @@ public class Booking {
     private Accommodation accommodation;
 
     @ManyToOne
-    private Person mainTraveler; // Hauptreisender
+    private Person mainTraveler;
 
     @ManyToMany(cascade = CascadeType.ALL)
-    private List<Person> additionalGuests; // Liste von Mitreisenden
+    private List<Person> additionalGuests;
 
     private LocalDateTime checkIn;
     private LocalDateTime expectedCheckOut;
@@ -102,17 +108,20 @@ public class Booking {
     }
 
     /**
-     * if the city where the main traveler lives equals the city where the accomodation is -> no tourist tax,
+     * if the city where the main traveler lives equals the city where the accommodation is -> no tourist tax,
      * else, yes
      */
     public void calculateTouristTax() {
         touristTax = Objects.equals(mainTraveler.getAddress().getCity(), accommodation.getAddress().getCity());
     }
 
+    /**
+     * Calculate all travelers that are over 18, important for tourist tax
+     */
     public void calculatePeopleOver18() {
         int count = 0;
 
-        // Prüfe das Alter des Hauptreisenden
+        // check age of main traveler
         if (mainTraveler != null && mainTraveler.getBirthDate() != null) {
             int age = calculateAge(mainTraveler.getBirthDate(), LocalDate.from(checkIn));
             if (age >= 18) {
@@ -120,7 +129,7 @@ public class Booking {
             }
         }
 
-        // Prüfe das Alter der Mitreisenden
+        // check age of additional guests
         if (additionalGuests != null) {
             for (Person guest : additionalGuests) {
                 if (guest.getBirthDate() != null) {
@@ -132,16 +141,16 @@ public class Booking {
             }
         }
 
-        // Setze den Zähler
+        // set the counter
         this.peopleOver18 = count;
     }
 
     /**
-     * Hilfsmethode, um das Alter anhand des Geburtsdatums und eines Referenzdatums zu berechnen.
+     * utility method to calculate the age in years
      *
-     * @param birthDate     Das Geburtsdatum der Person
-     * @param referenceDate Das Referenzdatum (z. B. Check-in-Datum)
-     * @return Das Alter in Jahren
+     * @param birthDate     birth year of person
+     * @param referenceDate the reference year
+     * @return the age in years
      */
     private int calculateAge(LocalDate birthDate, LocalDate referenceDate) {
         return referenceDate.getYear() - birthDate.getYear()

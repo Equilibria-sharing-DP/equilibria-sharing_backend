@@ -5,6 +5,12 @@ import api.equilibria_sharing.model.TravelDocumentType;
 
 import java.time.LocalDate;
 
+/**
+ * BookingRequest class - Just a placeholder class for Main traveler requests
+ *
+ * @author Manuel Fellner
+ * @version 23.02.2025
+ */
 public class MainTravelerRequest {
     private String firstName;
     private String lastName;

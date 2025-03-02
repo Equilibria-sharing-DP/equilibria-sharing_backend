@@ -2,6 +2,12 @@ package api.equilibria_sharing.model.requests;
 
 import java.time.LocalDate;
 
+/**
+ * BookingRequest class - Just a placeholder class for GuestRequests
+ *
+ * @author Manuel Fellner
+ * @version 23.02.2025
+ */
 public class GuestRequest {
     private String firstName;
     private String lastName;

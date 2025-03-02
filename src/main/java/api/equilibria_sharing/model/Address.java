@@ -7,15 +7,17 @@ import jakarta.persistence.*;
  * Address class
  *
  * @author Manuel Fellner
- * @version 23.11.2024
+ * @version 23.02.2025
  */
 @Entity
 public class Address {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     private String city;
+
+    private String country;
 
     private int postalCode;
 
@@ -25,8 +27,9 @@ public class Address {
 
     private String addressAdditional;
 
-    public Address(String city, int postalCode, String street, int houseNumber, String addressAdditional) {
+    public Address(String city, String country, int postalCode, String street, int houseNumber, String addressAdditional) {
         this.city = city;
+        this.country = country;
         this.postalCode = postalCode;
         this.street = street;
         this.houseNumber = houseNumber;
@@ -78,11 +81,20 @@ public class Address {
         this.addressAdditional = addressAdditional;
     }
 
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
     @Override
     public String toString() {
         return "Address{" +
                 "id=" + id +
                 ", city='" + city + '\'' +
+                ", country='" + country + '\'' +
                 ", postalCode=" + postalCode +
                 ", street='" + street + '\'' +
                 ", houseNumber=" + houseNumber +
