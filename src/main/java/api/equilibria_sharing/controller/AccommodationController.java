@@ -1,4 +1,6 @@
 package api.equilibria_sharing.controller;
+import api.equilibria_sharing.exceptions.ConflictException;
+import api.equilibria_sharing.exceptions.ResourceNotFoundException;
 import api.equilibria_sharing.model.*;
 import api.equilibria_sharing.model.requests.*;
 import api.equilibria_sharing.repositories.*;
@@ -42,6 +44,9 @@ public class AccommodationController {
      */
     @PostMapping
     public ResponseEntity<Accommodation> createAccommodation(@RequestBody AccommodationRequest accommodationRequest)  {
+        if (accommodationRepository.findByName(accommodationRequest.getName()) == null) {
+            throw new ConflictException("Accommodation with name " + accommodationRequest.getName() + " already exists");
+        }
         log.info("Creating a new accommodation...");
         log.info("Initializing Accommodation Address...");
         // initialize address from request
@@ -91,7 +96,7 @@ public class AccommodationController {
     public ResponseEntity<Accommodation> getAccommodationById(@PathVariable("id") Long id) {
         log.info("Fetching accommodation with id: " + id);
         Accommodation accommodation = accommodationRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Accommodation with ID " + id + " not found"));
         return ResponseEntity.ok(accommodation);
     }
 
@@ -113,6 +118,8 @@ public class AccommodationController {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Accommodation> deleteAccommodationById(@PathVariable("id") Long id) {
+        Accommodation accommodation = accommodationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Accommodation with ID " + id + " not found"));
         log.warn("Deleting accommodation with id: " + id);
         accommodationRepository.deleteById(id);
         return ResponseEntity.ok().build();
@@ -126,10 +133,12 @@ public class AccommodationController {
      */
     @PutMapping("/{id}")
     public ResponseEntity<Accommodation> updateAccommodationById(@PathVariable("id") Long id, @RequestBody AccommodationRequest accommodationRequest) {
+        Accommodation accommodation = accommodationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Accommodation with ID " + id + " not found"));
         log.info("Updating accommodation with id: " + id);
         // fetching existing accommodation
         Accommodation existingAccommodation = accommodationRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Accommodation not found"));
 
         // initialize address from request
         Address address = new Address();

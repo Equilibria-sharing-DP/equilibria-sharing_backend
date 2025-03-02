@@ -26,6 +26,7 @@ public class JwtService {
 
     // load secret key from the application.properties file
     public JwtService(@Value("${secretJwtKey}") String secretKey) {
+        // this string of a secret key is only initialized IF the application.properties attribute is empty, CHANGE IT!
         this.secretKey = secretKey.isEmpty() ? "q68z3W!higm^9$*l@946gl5nn8@f&PoqlK3@Kpy%RE%Kzgc7Hzi8t%f#7#fFuhfE2d$kQYqUDcfdFXtm4wbtQNG6aPJ*6w" : secretKey;
     }
 

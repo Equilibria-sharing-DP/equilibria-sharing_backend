@@ -1,4 +1,6 @@
 package api.equilibria_sharing.controller;
+import api.equilibria_sharing.exceptions.BadRequestException;
+import api.equilibria_sharing.exceptions.ResourceNotFoundException;
 import api.equilibria_sharing.model.*;
 import api.equilibria_sharing.model.requests.*;
 import api.equilibria_sharing.repositories.*;
@@ -47,11 +49,14 @@ public class BookingController {
      */
     @PostMapping
     public ResponseEntity<Booking> createBooking(@RequestBody BookingRequest bookingRequest) {
+        if (bookingRequest.getAccommodationId() == null || bookingRequest.getMainTraveler() == null) {
+            throw new BadRequestException("Accommodation ID and Main Traveler must be provided");
+        }
         log.info("Create booking request...");
         log.info("Fetching accommodation: {}", bookingRequest.getAccommodationId());
         // Fetch Accommodation
         Accommodation accommodation = accommodationRepository.findById(bookingRequest.getAccommodationId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Accommodation not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Accommodation not found"));
         log.info("Accommodation: {}", accommodation);
 
         log.info("Initializing main traveler...");
@@ -130,7 +135,7 @@ public class BookingController {
     public ResponseEntity<Booking> getBookingById(@PathVariable("id") Long id) {
         log.info("Fetching booking by id: {}", id);
         Booking booking = bookingRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Booking with ID " + id + " not found"));
         return ResponseEntity.ok(booking);
     }
 
@@ -166,6 +171,8 @@ public class BookingController {
     @DeleteMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Booking> deleteBookingById(@PathVariable("id") Long id) {
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking with ID " + id + " not found"));
         log.warn("Deleting booking by id: {}", id);
         bookingRepository.deleteById(id);
         return ResponseEntity.ok().build();
@@ -190,7 +197,7 @@ public class BookingController {
         // get existing accommodation
         log.info("Fetching accommodation: {}", bookingRequest.getAccommodationId());
         Accommodation accommodation = accommodationRepository.findById(bookingRequest.getAccommodationId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Accommodation not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Accommodation not found"));
         existingBooking.setAccommodation(accommodation);
 
         // update the main traveler
@@ -263,7 +270,7 @@ public class BookingController {
 
         // check if the accommodation exists
         Accommodation accommodation = accommodationRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Accommodation not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Accommodation not found"));
 
         // Get all booking entries regarding this accommodation
         List<Booking> bookings = bookingRepository.findByAccommodation(accommodation);

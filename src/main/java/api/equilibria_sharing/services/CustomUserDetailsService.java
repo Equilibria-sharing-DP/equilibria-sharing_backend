@@ -1,5 +1,6 @@
 package api.equilibria_sharing.services;
 
+import api.equilibria_sharing.exceptions.ResourceNotFoundException;
 import api.equilibria_sharing.model.Employee;
 import api.equilibria_sharing.repositories.EmployeeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +27,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Employee employee = employeeRepository.findByUsername(username);
         if (employee == null) {
-            throw new UsernameNotFoundException("User not found");
+            throw new ResourceNotFoundException("User not found");
         }
         return User.withUsername(employee.getUsername())
                 .password(employee.getPassword())

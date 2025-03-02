@@ -1,5 +1,7 @@
 package api.equilibria_sharing.controller;
 
+import api.equilibria_sharing.exceptions.BadRequestException;
+import api.equilibria_sharing.exceptions.ConflictException;
 import api.equilibria_sharing.model.Employee;
 import api.equilibria_sharing.model.Roles;
 import api.equilibria_sharing.model.requests.LoginRequest;
@@ -9,6 +11,7 @@ import api.equilibria_sharing.services.JwtService;
 import api.equilibria_sharing.services.LoginLogService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Value;
@@ -46,7 +49,10 @@ public class AuthController {
      * @return JWT Token for further use or error
      */
     @PostMapping("/login")
-    public String login(@RequestBody LoginRequest loginRequest, HttpServletRequest request) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletRequest request) {
+        if (loginRequest.getUsername() == null || loginRequest.getPassword() == null) {
+            throw new BadRequestException("Username and password must be provided");
+        }
         // get employee with the request data
         Employee employee = employeeRepository.findByUsername(loginRequest.getUsername());
         if (employee != null && passwordEncoder.matches(loginRequest.getPassword(), employee.getPassword())) {
@@ -64,9 +70,9 @@ public class AuthController {
             loginLogService.logLogin(employee.getUsername(), userAgent, ipAddress);
 
             // generate JWT Token to be used by employee
-            return jwtService.generateToken(employee.getUsername());
+            return ResponseEntity.ok().body(jwtService.generateToken(employee.getUsername()));
         }
-        throw new RuntimeException("Invalid credentials");
+        throw new BadRequestException("Invalid credentials were provided");
     }
 
     /**
@@ -75,15 +81,20 @@ public class AuthController {
      * @return
      */
     @PostMapping("/register")
-    public String register(@RequestBody RegisterRequest registerRequest) {
-        // if username already exists
-        if (employeeRepository.findByUsername(registerRequest.getUsername()) != null) {
-            throw new RuntimeException("Username already exists");
+    public ResponseEntity<?> register(@RequestBody RegisterRequest registerRequest) {
+
+        if (registerRequest.getUsername() == null || registerRequest.getPassword() == null || registerRequest.getUniqueCode() == null) {
+            throw new BadRequestException("Username, password and unique registration code must be provided");
         }
 
         // check if fetched unique code is correct
         if (!isValidUniqueCode(registerRequest.getUniqueCode())) {
-            throw new RuntimeException("Invalid registration code");
+            throw new BadRequestException("Invalid registration code provided");
+        }
+
+        // if username already exists
+        if (employeeRepository.findByUsername(registerRequest.getUsername()) != null) {
+            throw new ConflictException("Username already exists");
         }
 
         // create new employee entity
@@ -96,7 +107,7 @@ public class AuthController {
         newEmployee.setUsedRegistrationCode(employeeRegistrationCode);
         employeeRepository.save(newEmployee);
 
-        return "Registration successful";
+        return ResponseEntity.ok().body("Registration successful wit username " + registerRequest.getUsername() + ". Please proceed to log in.");
     }
 
     private boolean isValidUniqueCode(String code) {
