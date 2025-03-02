@@ -2,11 +2,14 @@ package api.equilibria_sharing.model;
 
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Accommodation entity - for the company's accommodations
  *
  * @author Manuel Fellner
- * @version 02.03.2025
+ * @version 02.03a.2025
  */
 @Entity
 public class Accommodation {
@@ -23,6 +26,9 @@ public class Accommodation {
 
     private int maxGuests;
     private double pricePerNight;
+
+    @ElementCollection
+    private List<String> pictureUrls;
 
     public Accommodation(String name, String type, String description, Address address, int maxGuests, double pricePerNight) {
         this.name = name;
@@ -87,6 +93,32 @@ public class Accommodation {
 
     public void setPricePerNight(Double pricePerNight) {
         this.pricePerNight = pricePerNight;
+    }
+
+    public void setPricePerNight(double pricePerNight) {
+        this.pricePerNight = pricePerNight;
+    }
+
+    public List<String> getPictureUrls() {
+        return pictureUrls;
+    }
+
+    public void setPictureUrls(List<String> pictureUrls) {
+        this.pictureUrls = pictureUrls;
+    }
+
+    @Override
+    public String toString() {
+        return "Accommodation{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", type='" + type + '\'' +
+                ", description='" + description + '\'' +
+                ", address=" + address +
+                ", maxGuests=" + maxGuests +
+                ", pricePerNight=" + pricePerNight +
+                ", pictureUrls=" + pictureUrls +
+                '}';
     }
 }
 
