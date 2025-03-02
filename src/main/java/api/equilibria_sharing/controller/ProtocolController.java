@@ -1,5 +1,6 @@
 package api.equilibria_sharing.controller;
 
+import api.equilibria_sharing.model.Accommodation;
 import api.equilibria_sharing.model.Booking;
 
 // import com.itextpdf.text.Document;
@@ -29,15 +30,17 @@ public class ProtocolController {
     private static final Logger log = LoggerFactory.getLogger(ProtocolController.class);
 
     public final BookingRepository bookingRepository;
+    public final AccommodationRepository accommodationRepository;
     private final Protocol protocol;
 
-    public ProtocolController(BookingRepository bookingRepository) {
+    public ProtocolController(BookingRepository bookingRepository, AccommodationRepository accommodationRepository) {
+        this.accommodationRepository = accommodationRepository;
         this.bookingRepository = bookingRepository;
         this.protocol = new Protocol(this);
     }
 
     @GetMapping("/api/v1/protocol")
-    public ResponseEntity<byte[]> generateProtocol( @RequestParam String format,
+    public ResponseEntity<byte[]> generateProtocol( @RequestParam String format, @RequestParam String accommodationID,
                                                     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate beginDate,
                                                     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         
@@ -49,9 +52,20 @@ public class ProtocolController {
 
             //Daten auslesen
             LocalDateTime beginDateTime = beginDate.atStartOfDay();
-            LocalDateTime endDateTime = endDate.atStartOfDay().plusDays(1).minusNanos(1); // Ende des Tages
-            List<Booking> bookingList = this.bookingRepository.findAllByCheckInBetween(beginDateTime, endDateTime);
+            LocalDateTime endDateTime = endDate.atStartOfDay().plusDays(1).minusNanos(1);
+            List<Booking> bookingList;
 
+            
+            
+
+            if(accommodationID.equals("all")){
+                bookingList = this.bookingRepository.findAllByCheckInBetween(beginDateTime, endDateTime);
+            }else{
+                Accommodation a = accommodationRepository.findById(Long.parseLong(accommodationID)).orElseThrow(() -> new IllegalArgumentException("Accommodation not found"));
+                bookingList = this.bookingRepository.findByAccommodationAndCheckInBetween(a,beginDateTime, endDateTime);
+            }
+
+            
             if(format.equals("pdf")){ 
                 protocol.getPDF(bookingList, baos);
                 log.info("pdf");
