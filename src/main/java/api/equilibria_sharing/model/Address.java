@@ -38,9 +38,7 @@ public class Address {
         }
     }
 
-    public Address() {
-
-    }
+    public Address() {}
 
     public String getCity() {
         return city;

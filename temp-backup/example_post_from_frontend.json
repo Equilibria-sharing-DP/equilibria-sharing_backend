@@ -1,0 +1,63 @@
+{
+  "accommodation": {
+    "name": "Villa Seaside",
+    "type": "APARTMENT",
+    "description": "whatever",
+    "maxGuests": 12,
+    "pricePerNight": 47.31
+  },
+  "apartmentCountry": "ITALY",
+  "mainPerson": {
+    "mainTraveler": true,
+    "firstName": "Mario",
+    "lastName": "Rossi",
+    "gender": "MALE",
+    "birthDate": "1985-04-12",
+    "travelDocument": {
+      "passportNr": "X12345678",
+      "country": "ITALY",
+      "issueDate": "2010-05-01",
+      "issuing_authority": "Ministero dell'Interno"
+    },
+    "address": {
+      "street": "Via Roma",
+      "city": "Napoli",
+      "zipCode": "80100",
+      "country": "ITALY"
+    },
+    "mainTravelerRef": ""
+  },
+  "persons": [
+    {
+      "mainTraveler": false,
+      "firstName": "Luigi",
+      "lastName": "Rossi",
+      "gender": "MALE",
+      "birthDate": "1990-07-25",
+      "address": {
+        "street": "Via Milano",
+        "city": "Roma",
+        "zipCode": "00100",
+        "country": "ITALY"
+      },
+      "mainTravelerRef": "Mario-Rossi-1985"
+    },
+    {
+      "mainTraveler": false,
+      "firstName": "Anna",
+      "lastName": "Verdi",
+      "gender": "FEMALE",
+      "birthDate": "2005-11-03",
+      "address": {
+        "street": "Via Firenze",
+        "city": "Firenze",
+        "zipCode": "50100",
+        "country": "ITALY"
+      },
+      "mainTravelerRef": "Mario-Rossi-1985"
+    }
+  ],
+  "checkIn": "2025-07-15T14:00:00",
+  "expectedCheckOut": "2025-07-20T10:00:00",
+  "actualCheckOut": "2025-07-19T09:30:00"
+}

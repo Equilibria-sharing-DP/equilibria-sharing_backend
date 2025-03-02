@@ -5,15 +5,13 @@ import api.equilibria_sharing.model.Booking;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * BookingRepository - important for CRUD Operations regarding this entity
- *
- * @author Manuel Fellner
- * @version 23.02.2025
- */
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Long> {
+    
+    List<Booking> findAllByCheckInBetween(LocalDateTime beginDate, LocalDateTime endDate);
+    List<Booking> findByAccommodationAndCheckInBetween(Accommodation accommodation, LocalDateTime beginDate, LocalDateTime endDate);
     List<Booking> findByAccommodation(Accommodation accommodation);
 }
