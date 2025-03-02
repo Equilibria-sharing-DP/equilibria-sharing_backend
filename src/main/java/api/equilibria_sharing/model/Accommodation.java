@@ -6,7 +6,7 @@ import jakarta.persistence.*;
  * Accommodation entity - for the company's accommodations
  *
  * @author Manuel Fellner
- * @version 23.02.2025
+ * @version 02.03.2025
  */
 @Entity
 public class Accommodation {
@@ -73,11 +73,11 @@ public class Accommodation {
         this.address = address;
     }
 
-    public Integer getMaxGuests() {
+    public int getMaxGuests() {
         return maxGuests;
     }
 
-    public void setMaxGuests(Integer maxGuests) {
+    public void setMaxGuests(int maxGuests) {
         this.maxGuests = maxGuests;
     }
 
