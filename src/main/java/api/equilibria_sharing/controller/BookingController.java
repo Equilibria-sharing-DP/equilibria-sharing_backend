@@ -153,7 +153,7 @@ public class BookingController {
     @DeleteMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Booking> deleteAllBookings() {
-        log.info("Deleting all bookings");
+        log.warn("Deleting all bookings");
         bookingRepository.deleteAll();
         return ResponseEntity.ok().build();
     }
@@ -164,10 +164,9 @@ public class BookingController {
      * @return http OK
      */
     @DeleteMapping("/{id}")
-    
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Booking> deleteBooking(@PathVariable("id") Long id) {
-        log.info("Deleting booking by id: {}", id);
+    public ResponseEntity<Booking> deleteBookingById(@PathVariable("id") Long id) {
+        log.warn("Deleting booking by id: {}", id);
         bookingRepository.deleteById(id);
         return ResponseEntity.ok().build();
     }
@@ -251,4 +250,25 @@ public class BookingController {
 
         return ResponseEntity.ok(updatedBooking);
     }
+
+    /**
+     * Fetch all bookings for a specific accommodation
+     * @param id ID of the accommodation
+     * @return List of bookings for the given accommodation
+     */
+    @GetMapping("/accommodation/{id}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<Booking>> getBookingsByAccommodation(@PathVariable("id") Long id) {
+        log.info("Fetching bookings for accommodation with id: {}", id);
+
+        // check if the accommodation exists
+        Accommodation accommodation = accommodationRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Accommodation not found"));
+
+        // Get all booking entries regarding this accommodation
+        List<Booking> bookings = bookingRepository.findByAccommodation(accommodation);
+
+        return ResponseEntity.ok(bookings);
+    }
+
 }
