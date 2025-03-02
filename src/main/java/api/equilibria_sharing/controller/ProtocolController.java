@@ -37,7 +37,7 @@ public class ProtocolController {
     }
 
     @GetMapping("/api/v1/protocol")
-    public ResponseEntity<byte[]> generateProtocol( @RequestParam String format,
+    public ResponseEntity<byte[]> generateProtocol( @RequestParam String format, @RequestParam String accomodationID,
                                                     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate beginDate,
                                                     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         
@@ -49,9 +49,16 @@ public class ProtocolController {
 
             //Daten auslesen
             LocalDateTime beginDateTime = beginDate.atStartOfDay();
-            LocalDateTime endDateTime = endDate.atStartOfDay().plusDays(1).minusNanos(1); // Ende des Tages
-            List<Booking> bookingList = this.bookingRepository.findAllByCheckInBetween(beginDateTime, endDateTime);
+            LocalDateTime endDateTime = endDate.atStartOfDay().plusDays(1).minusNanos(1);
+            List<Booking> bookingList;
 
+            if(accomodationID=="all"){
+                bookingList = this.bookingRepository.findAllByCheckInBetween(beginDateTime, endDateTime);
+            }else{
+                bookingList = this.bookingRepository.findByDatumBetweenAndWert(Integer.parseInt(accomodationID),beginDateTime, endDateTime);
+            }
+
+            
             if(format.equals("pdf")){ 
                 protocol.getPDF(bookingList, baos);
                 log.info("pdf");

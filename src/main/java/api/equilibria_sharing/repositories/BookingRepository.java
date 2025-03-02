@@ -11,4 +11,5 @@ import java.util.List;
 public interface BookingRepository extends JpaRepository<Booking, Long> {
     
     List<Booking> findAllByCheckInBetween(LocalDateTime beginDate, LocalDateTime endDate);
+    List<Booking> findByDatumBetweenAndWert(int accomodation, LocalDateTime beginDate, LocalDateTime endDate);
 }
