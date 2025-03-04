@@ -70,32 +70,27 @@ public class ProtocolController {
             }
 
 
-            switch (format) {
-                case "pdf" -> {
-                    protocol.getPDF(bookingList, baos);
-                    log.info("pdf");
-                    headers.setContentType(MediaType.APPLICATION_PDF);
-                    headers.setContentDispositionFormData("attachment", "protocol.pdf");
-                }
-                case "csv" -> {
-                    byte[] csvBytes = protocol.getCSV(bookingList);  // CSV-Daten werden nun als Byte-Array zurückgegeben
-
-                    log.info("csv");
-                    headers.setContentType(new MediaType("text", "csv"));
-                    headers.setContentDispositionFormData("attachment", "protocol.csv");
-                    return ResponseEntity.ok().headers(headers).body(csvBytes);  // CSV als Antwort
-                }
-                case "xlsx" -> {
-                    byte[] xlsxBytes = protocol.getExcel(bookingList);
-                    log.info("excel");
-                    headers.setContentType(new MediaType("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
-                    headers.setContentDispositionFormData("attachment", "protocol.xlsx");
-                    return ResponseEntity.ok().headers(headers).body(xlsxBytes);
-                }
-                default -> {
-                    return ResponseEntity.badRequest().body("Falscher Dateityp".getBytes());
-                }
+            if(format.equals("pdf")){
+                protocol.getPDF(bookingList, baos);
+                log.info("pdf");
+                headers.setContentType(MediaType.APPLICATION_PDF);
+                headers.setContentDispositionFormData("attachment", "protocol.pdf");
             }
+            else if(format.equals("csv")){
+                byte[] csvBytes = protocol.getCSV(bookingList);  // CSV-Daten werden nun als Byte-Array zurückgegeben
+                log.info("csv");
+                headers.setContentType(new MediaType("text", "csv"));
+                headers.setContentDispositionFormData("attachment", "protocol.csv");
+                return ResponseEntity.ok().headers(headers).body(csvBytes);  // CSV als Antwort
+            }
+            else if (format.equals("xlsx")){
+                byte[] xlsxBytes = protocol.getExcel(bookingList);
+                log.info("excel");
+                headers.setContentType(new MediaType("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+                headers.setContentDispositionFormData("attachment", "protocol.xlsx");
+                return ResponseEntity.ok().headers(headers).body(xlsxBytes);
+            }
+            else { return ResponseEntity.badRequest().body("Falscher Dateityp".getBytes()); }
 
             log.info("Downloading File");
             return ResponseEntity.ok().headers(headers).body(baos.toByteArray());
@@ -119,5 +114,9 @@ public class ProtocolController {
         
         return ResponseEntity.ok("Daten empfangen");
     }
+    public void logging(String a){
+        log.info(a);
+    }
+
 }
 

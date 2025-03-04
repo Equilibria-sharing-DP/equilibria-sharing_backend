@@ -222,3 +222,133 @@ Der **BookingController** stellt Endpunkte zur Verwaltung von Buchungen (Booking
   "peopleOver18": 2
 }
 ```
+
+### API Dokumentation - AccommodationController
+
+- **Basis-URL**: `/api/v1/accommodations`
+- Der AccommodationController stellt Endpunkte zur Verwaltung von Unterkünften bereit. Mitarbeiter müssen authentifiziert sein, um diese Endpunkte nutzen zu können.
+
+#### 1. Unterkunft erstellen
+
+- **Methode**: POST
+
+- **URL**: `/api/v1/accommodations`
+
+- **Beschreibung**: Erstellt eine neue Unterkunft mit den übergebenen Daten. Nur Mitarbeiter dürfen diese Aktion durchführen.
+
+Request Body:
+
+```json
+{
+"name": "Hotel Beispiel",
+"type": "Hotel",
+"description": "Ein schönes Hotel im Stadtzentrum.",
+"maxGuests": 100,
+"pricePerNight": 120.50,
+"pictureUrls": ["https://example.com/image1.jpg"],
+"street": "Hauptstraße",
+"houseNumber": "10",
+"postalCode": "1010",
+"city": "Wien",
+"country": "Österreich",
+"addressAdditional": "Etage 3"
+}
+```
+
+Response:
+
+- **Status**: 201 Created
+
+- **Body**: JSON-Darstellung der erstellten Unterkunft
+
+#### 2. Alle Unterkünfte abrufen
+
+- **Methode**: GET
+
+- **URL**: `/api/v1/accommodations`
+
+- **Beschreibung**: Gibt eine Liste aller Unterkünfte zurück.
+
+Response:
+
+- **Status**: 200 OK
+
+- **Body**: Liste aller Unterkünfte
+
+#### 3. Unterkunft nach ID abrufen
+
+- **Methode**: GET
+
+- **URL**: `/api/v1/accommodations/{id}`
+
+- **Beschreibung**: Ruft eine spezifische Unterkunft anhand der ID ab.
+
+Response:
+
+- **Status**: 200 OK
+
+- **Body**: JSON-Darstellung der Unterkunft
+
+- **Fehler**: 404 Not Found, falls die Unterkunft nicht existiert
+
+#### 4. Alle Unterkünfte löschen
+
+- **Methode**: DELETE
+
+- **URL**: `/api/v1/accommodations`
+
+- **Beschreibung**: Löscht alle Unterkünfte aus der Datenbank. Nur Mitarbeiter dürfen diese Aktion durchführen.
+
+Response:
+
+- **Status**: 200 OK
+
+#### 5. Unterkunft nach ID löschen
+
+- **Methode**: DELETE
+
+- **URL**: /api/v1/accommodations/{id}
+
+- **Beschreibung**: Löscht eine spezifische Unterkunft anhand der ID.
+
+Response:
+
+- **Status**: 200 OK
+
+- **Fehler**: 404 Not Found, falls die Unterkunft nicht existiert
+
+#### 6. Unterkunft aktualisieren
+
+- **Methode**: PUT
+
+- **URL**: `/api/v1/accommodations/{id}`
+
+- **Beschreibung**: Aktualisiert eine bestehende Unterkunft mit den übergebenen Daten.
+
+Request Body:
+
+```json
+{
+"name": "Hotel Beispiel Aktualisiert",
+"type": "Hotel",
+"description": "Ein renoviertes Hotel im Stadtzentrum.",
+"maxGuests": 120,
+"pricePerNight": 140.75,
+"pictureUrls": ["https://example.com/image2.jpg"],
+"street": "Neue Hauptstraße",
+"houseNumber": "15",
+"postalCode": "1020",
+"city": "Wien",
+"country": "Österreich",
+"addressAdditional": "Etage 4"
+}
+```
+
+Response:
+
+- **Status**: 200 OK
+
+- **Body**: JSON-Darstellung der aktualisierten Unterkunft
+
+- **Fehler**: 404 Not Found, falls die Unterkunft nicht existiert
+
