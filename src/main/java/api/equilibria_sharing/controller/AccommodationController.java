@@ -22,7 +22,6 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/v1/accommodations")
-@PreAuthorize("isAuthenticated()")
 public class AccommodationController {
     private static final Logger log = LoggerFactory.getLogger(AccommodationController.class);
 
@@ -43,6 +42,7 @@ public class AccommodationController {
      * @return Status OK and new object in response body
      */
     @PostMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Accommodation> createAccommodation(@RequestBody AccommodationRequest accommodationRequest)  {
         if (accommodationRepository.findByName(accommodationRequest.getName()) == null) {
             throw new ConflictException("Accommodation with name " + accommodationRequest.getName() + " already exists");
@@ -77,7 +77,7 @@ public class AccommodationController {
     }
 
     /**
-     * Get all Accommodations - Employee must be authenticated
+     * Get all Accommodations - user must NOT be authenticated
      * @return Status OK and accommodations as JSON in resp body
      */
     @GetMapping
@@ -88,7 +88,7 @@ public class AccommodationController {
     }
 
     /**
-     * Get accommodation with specific ID - Employee must be authenticated
+     * Get accommodation with specific ID - user must NOT be authenticated
      * @param id
      * @return
      */
@@ -105,6 +105,7 @@ public class AccommodationController {
      * @return ok
      */
     @DeleteMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Accommodation> deleteAllAccommodations() {
         log.warn("Deleting all accommodations!");
         accommodationRepository.deleteAll();
@@ -112,7 +113,7 @@ public class AccommodationController {
     }
 
     /**
-     * Delete specific accommodation with ID - Employee must be authenticated
+     * Delete specific accommodation with ID - user must NOT be authenticated
      * @param id id of accommodation to be deleted
      * @return ok
      */
@@ -132,6 +133,7 @@ public class AccommodationController {
      * @return OK with new object as JSON in resp. body
      */
     @PutMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Accommodation> updateAccommodationById(@PathVariable("id") Long id, @RequestBody AccommodationRequest accommodationRequest) {
         Accommodation accommodation = accommodationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Accommodation with ID " + id + " not found"));
