@@ -106,20 +106,5 @@ public class ProtocolController {
             throw new ProtocolGenerationException("Error while generating PDF");
         }
     }
-    @GetMapping("/report")
-    public ResponseEntity<?> getReport(
-            @RequestParam String format,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate beginDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        
-        // Logik für CSV oder PDF generieren
-        System.out.println("Format: " + format);
-        System.out.println("Beginn: " + beginDate);
-        System.out.println("Ende: " + endDate);
-
-        
-        
-        return ResponseEntity.ok("Daten empfangen");
-    }
 }
 
