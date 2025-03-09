@@ -49,6 +49,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/register").permitAll()
                         //only allow POST requests to bookings endpoint (booking creation by user)
                         .requestMatchers(HttpMethod.POST, "/api/v1/bookings").permitAll()
+                        // only allow GET requests to accommodation endpoints
+                        .requestMatchers(HttpMethod.GET, "/api/v1/accommodations").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/accommodations/{id}").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(AbstractHttpConfigurer::disable);
