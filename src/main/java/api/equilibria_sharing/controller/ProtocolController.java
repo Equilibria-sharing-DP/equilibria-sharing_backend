@@ -1,5 +1,7 @@
 package api.equilibria_sharing.controller;
 
+import api.equilibria_sharing.exceptions.BadRequestException;
+import api.equilibria_sharing.exceptions.ProtocolGenerationException;
 import api.equilibria_sharing.model.Accommodation;
 import api.equilibria_sharing.model.Booking;
 
@@ -14,6 +16,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -30,6 +33,7 @@ import java.util.List;
  */
 @RestController
 @PreAuthorize("isAuthenticated()")
+@RequestMapping("/api/v1/protocol")
 public class ProtocolController {
     private static final Logger log = LoggerFactory.getLogger(ProtocolController.class);
 
@@ -43,7 +47,7 @@ public class ProtocolController {
         this.protocol = new Protocol(this);
     }
 
-    @GetMapping("/api/v1/protocol")
+    @GetMapping()
     public ResponseEntity<byte[]> generateProtocol( @RequestParam String format, @RequestParam String accommodationID,
                                                     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate beginDate,
                                                     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
@@ -59,8 +63,8 @@ public class ProtocolController {
             LocalDateTime endDateTime = endDate.atStartOfDay().plusDays(1).minusNanos(1);
             List<Booking> bookingList;
 
-            
-            
+            log.info("Creating file with following data:" + beginDateTime + ";" + endDateTime + ";");
+
 
             if(accommodationID.equals("all")){
                 bookingList = this.bookingRepository.findAllByCheckInBetween(beginDateTime, endDateTime);
@@ -69,37 +73,40 @@ public class ProtocolController {
                 bookingList = this.bookingRepository.findByAccommodationAndCheckInBetween(a,beginDateTime, endDateTime);
             }
 
+            switch (format) {
+                case "pdf" -> {
+                    protocol.getPDF(bookingList, baos);
+                    log.info("pdf");
+                    headers.setContentType(MediaType.APPLICATION_PDF);
+                    headers.setContentDispositionFormData("attachment", "Buchungsprotokoll-" +  beginDateTime + ";" + endDateTime + "." + format.toLowerCase());
+                }
+                case "csv" -> {
+                    byte[] csvBytes = protocol.getCSV(bookingList);  // CSV-Daten werden nun als Byte-Array zurückgegeben
 
-            if(format.equals("pdf")){
-                protocol.getPDF(bookingList, baos);
-                log.info("pdf");
-                headers.setContentType(MediaType.APPLICATION_PDF);
-                headers.setContentDispositionFormData("attachment", "protocol.pdf");
+                    log.info("csv");
+                    headers.setContentType(new MediaType("text", "csv"));
+                    headers.setContentDispositionFormData("attachment", "Buchungsprotokoll-" +  beginDateTime + ";" + endDateTime + "." + format.toLowerCase());
+                    return ResponseEntity.ok().headers(headers).body(csvBytes);  // CSV als Antwort
+                }
+                case "xlsx" -> {
+                    byte[] xlsxBytes = protocol.getExcel(bookingList);
+                    log.info("excel");
+                    headers.setContentType(new MediaType("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+                    headers.setContentDispositionFormData("attachment", "Buchungsprotokoll-" +  beginDateTime + ";" + endDateTime + "." + format.toLowerCase());
+                    return ResponseEntity.ok().headers(headers).body(xlsxBytes);
+                }
+                default ->
+                        throw new BadRequestException("Wrong datatype specified. Please specify only pdf, csv or xlsx (excel).");
             }
-            else if(format.equals("csv")){
-                byte[] csvBytes = protocol.getCSV(bookingList);  // CSV-Daten werden nun als Byte-Array zurückgegeben
-                log.info("csv");
-                headers.setContentType(new MediaType("text", "csv"));
-                headers.setContentDispositionFormData("attachment", "protocol.csv");
-                return ResponseEntity.ok().headers(headers).body(csvBytes);  // CSV als Antwort
-            }
-            else if (format.equals("xlsx")){
-                byte[] xlsxBytes = protocol.getExcel(bookingList);
-                log.info("excel");
-                headers.setContentType(new MediaType("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
-                headers.setContentDispositionFormData("attachment", "protocol.xlsx");
-                return ResponseEntity.ok().headers(headers).body(xlsxBytes);
-            }
-            else { return ResponseEntity.badRequest().body("Falscher Dateityp".getBytes()); }
 
             log.info("Downloading File");
             return ResponseEntity.ok().headers(headers).body(baos.toByteArray());
         } catch (Exception e) {
             log.error("Error while generating PDF", e);
-            return ResponseEntity.internalServerError().build();
+            throw new ProtocolGenerationException("Error while generating PDF");
         }
     }
-    @GetMapping("/api/v1/report")
+    @GetMapping("/report")
     public ResponseEntity<?> getReport(
             @RequestParam String format,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate beginDate,
@@ -114,9 +121,5 @@ public class ProtocolController {
         
         return ResponseEntity.ok("Daten empfangen");
     }
-    public void logging(String a){
-        log.info(a);
-    }
-
 }
 
