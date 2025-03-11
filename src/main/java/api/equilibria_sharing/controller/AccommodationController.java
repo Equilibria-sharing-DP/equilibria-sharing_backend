@@ -44,7 +44,7 @@ public class AccommodationController {
     @PostMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Accommodation> createAccommodation(@RequestBody AccommodationRequest accommodationRequest)  {
-        if (accommodationRepository.findByName(accommodationRequest.getName()) == null) {
+        if (accommodationRepository.findByName(accommodationRequest.getName()) != null) {
             throw new ConflictException("Accommodation with name " + accommodationRequest.getName() + " already exists");
         }
         log.info("Creating a new accommodation...");
