@@ -48,63 +48,78 @@ public class ProtocolController {
     }
 
     @GetMapping()
-    public ResponseEntity<byte[]> generateProtocol( @RequestParam String format, @RequestParam String accommodationID,
-                                                    @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate beginDate,
-                                                    @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        
-        
+    public ResponseEntity<byte[]> generateProtocol(
+            @RequestParam(required = true) String format,
+            @RequestParam(required = true) String accommodationID,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate beginDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             log.info("Create File");
             HttpHeaders headers = new HttpHeaders();
 
+            // Parameter validieren und trimmen
+            if (format == null || format.isBlank()) {
+                throw new BadRequestException("Format cannot be empty.");
+            }
+            format = format.trim().toLowerCase(); // Kleinbuchstaben für bessere Vergleichbarkeit
 
-            //Daten auslesen
+            if (accommodationID == null || accommodationID.isBlank()) {
+                throw new BadRequestException("AccommodationID cannot be empty.");
+            }
+            accommodationID = accommodationID.trim();
+
+            // Daten auslesen
             LocalDateTime beginDateTime = beginDate.atStartOfDay();
             LocalDateTime endDateTime = endDate.atStartOfDay().plusDays(1).minusNanos(1);
             List<Booking> bookingList;
 
-            log.info("Creating file with following data:" + beginDateTime + ";" + endDateTime + ";");
+            log.info("Creating file with following data: {} - {}", beginDateTime, endDateTime);
 
-
-            if(accommodationID.equals("all")){
+            if (accommodationID.equalsIgnoreCase("all")) {
                 bookingList = this.bookingRepository.findAllByCheckInBetween(beginDateTime, endDateTime);
-            }else{
-                Accommodation a = accommodationRepository.findById(Long.parseLong(accommodationID)).orElseThrow(() -> new IllegalArgumentException("Accommodation not found"));
-                bookingList = this.bookingRepository.findByAccommodationAndCheckInBetween(a,beginDateTime, endDateTime);
+            } else {
+                try {
+                    Long accommodationIdLong = Long.parseLong(accommodationID);
+                    Accommodation a = accommodationRepository.findById(accommodationIdLong)
+                            .orElseThrow(() -> new IllegalArgumentException("Accommodation not found"));
+                    bookingList = this.bookingRepository.findByAccommodationAndCheckInBetween(a, beginDateTime, endDateTime);
+                } catch (NumberFormatException e) {
+                    throw new BadRequestException("Invalid accommodation ID: " + accommodationID);
+                }
             }
 
             switch (format) {
                 case "pdf" -> {
                     protocol.getPDF(bookingList, baos);
-                    log.info("pdf");
+                    log.info("Generated PDF");
                     headers.setContentType(MediaType.APPLICATION_PDF);
-                    headers.setContentDispositionFormData("attachment", "Buchungsprotokoll-" +  beginDateTime + ";" + endDateTime + "." + format.toLowerCase());
+                    headers.setContentDispositionFormData("attachment", "Buchungsprotokoll-" + beginDateTime + ";" + endDateTime + ".pdf");
                 }
                 case "csv" -> {
-                    byte[] csvBytes = protocol.getCSV(bookingList);  // CSV-Daten werden nun als Byte-Array zurückgegeben
-
-                    log.info("csv");
+                    byte[] csvBytes = protocol.getCSV(bookingList);
+                    log.info("Generated CSV");
                     headers.setContentType(new MediaType("text", "csv"));
-                    headers.setContentDispositionFormData("attachment", "Buchungsprotokoll-" +  beginDateTime + ";" + endDateTime + "." + format.toLowerCase());
-                    return ResponseEntity.ok().headers(headers).body(csvBytes);  // CSV als Antwort
+                    headers.setContentDispositionFormData("attachment", "Buchungsprotokoll-" + beginDateTime + ";" + endDateTime + ".csv");
+                    return ResponseEntity.ok().headers(headers).body(csvBytes);
                 }
                 case "xlsx" -> {
                     byte[] xlsxBytes = protocol.getExcel(bookingList);
-                    log.info("excel");
+                    log.info("Generated Excel");
                     headers.setContentType(new MediaType("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
-                    headers.setContentDispositionFormData("attachment", "Buchungsprotokoll-" +  beginDateTime + ";" + endDateTime + "." + format.toLowerCase());
+                    headers.setContentDispositionFormData("attachment", "Buchungsprotokoll-" + beginDateTime + ";" + endDateTime + ".xlsx");
                     return ResponseEntity.ok().headers(headers).body(xlsxBytes);
                 }
-                default ->
-                        throw new BadRequestException("Wrong datatype specified. Please specify only pdf, csv or xlsx (excel).");
+                default -> throw new BadRequestException("Invalid format: " + format + ". Allowed: pdf, csv, xlsx.");
             }
 
             log.info("Downloading File");
             return ResponseEntity.ok().headers(headers).body(baos.toByteArray());
         } catch (Exception e) {
-            log.error("Error while generating PDF", e);
-            throw new ProtocolGenerationException("Error while generating PDF");
+            log.error("Error while generating protocol", e);
+            throw new ProtocolGenerationException("Error while generating protocol");
         }
     }
+
 }
 
