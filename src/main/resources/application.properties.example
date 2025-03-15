@@ -1,9 +1,11 @@
+# Example values! For production use -> change them!
+
 spring.application.name=equilibria-sharing
 
-# MariaDB connection properties, example data
+# MariaDB connection properties
 spring.datasource.url=jdbc:mariadb://localhost:3306/mydatabase
-spring.datasource.username=<your-user>
-spring.datasource.password=<your-pwd>
+spring.datasource.username=myuser
+spring.datasource.password=secret
 
 # JDBC driver for MariaDB
 spring.datasource.driver-class-name=org.mariadb.jdbc.Driver
@@ -18,4 +20,4 @@ server.servlet.session.timeout=30m
 employeeRegistrationCode=SPECIAL123
 
 # Example JWT secret key
-secretJwtKey=<your-strong-key>
+secretJwtKey=fidjsfoidsjsfdsdsddsfjoisjoi3i92i2109i09i)=)§=)"!§UJINDSKALFNIDAOF!UJ§)"!=§UJ"!DIOSA
