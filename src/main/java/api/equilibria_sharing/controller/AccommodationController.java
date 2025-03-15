@@ -118,6 +118,7 @@ public class AccommodationController {
      * @return ok
      */
     @DeleteMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Accommodation> deleteAccommodationById(@PathVariable("id") Long id) {
         Accommodation accommodation = accommodationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Accommodation with ID " + id + " not found"));
