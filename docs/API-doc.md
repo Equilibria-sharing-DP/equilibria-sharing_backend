@@ -2,7 +2,7 @@
 
 **Autor**: [Manuel Fellner](mfellner@student.tgm.ac.at)
 
-**Version**: 15.03.2025
+**Version**: 31.03.2025
 
 ## Allgemeine Datenstruktur
 
@@ -408,7 +408,7 @@ Der **BookingController** stellt Endpunkte zur Verwaltung von Buchungen (Booking
 - **Methode**: `PUT`
 
 - **URL**: `/api/v1/accommodations/{id}`
-- **Beispiel-URL**: `http://localhost:8080/api/v1/accommodation/1`
+- **Beispiel-URL**: `http://localhost:8080/api/v1/accommodations/1`
 - **Beschreibung**: Aktualisiert eine bestehende Unterkunft mit den übergebenen Daten. Authentifizierug ist hierfür notwendig.
 - **Request Header**:
   ```
